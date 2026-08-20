@@ -140,8 +140,13 @@ export const User = compile("User", userSchema, "users");
  * holds the pending signup profile (with an already-bcrypt-hashed password)
  * until the code is verified; no `users` document exists before that.
  */
-const emailOtpSchema = autoIncSchema(
-  "email_otps",
+/**
+ * Plain ObjectId `_id`, deliberately NOT autoIncSchema: these ids never appear
+ * in a URL, a JWT or a foreign key, and the numeric id is only assigned by a
+ * pre("save") hook — which an upsert bypasses, leaving MongoDB to generate an
+ * ObjectId that then fails to cast against a declared Number `_id`.
+ */
+const emailOtpSchema = new Schema(
   {
     email: { type: String, required: true, maxlength: 190 },
     purpose: { type: String, required: true, default: "REGISTER" },
@@ -154,14 +159,14 @@ const emailOtpSchema = autoIncSchema(
     expiresAt: { type: Date, required: true },
     createdAt: { type: Date, required: true, default: Date.now },
   },
-  [
-    // One live code per address + purpose: issuing a new one overwrites (and
-    // therefore invalidates) the previous code.
-    [{ email: 1, purpose: 1 }, { unique: true, name: "email_otps_uq" }],
-    // TTL — MongoDB deletes the document at `expiresAt`.
-    [{ expiresAt: 1 }, { name: "email_otps_ttl_idx", expireAfterSeconds: 0 }],
-  ],
+  { versionKey: false },
 );
+// One live code per address + purpose: issuing a new one overwrites (and
+// therefore invalidates) the previous code.
+emailOtpSchema.index({ email: 1, purpose: 1 }, { unique: true, name: "email_otps_uq" });
+// TTL — MongoDB deletes the document at `expiresAt`.
+emailOtpSchema.index({ expiresAt: 1 }, { name: "email_otps_ttl_idx", expireAfterSeconds: 0 });
+
 export const EmailOtp = compile("EmailOtp", emailOtpSchema, "email_otps");
 
 /* ------------------------------------------------------------------ */
