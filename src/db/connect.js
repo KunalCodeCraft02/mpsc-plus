@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
 
-const uri = process.env.DATABASE_URL || process.env.MONGODB_URI;
-
-if (!uri) {
-  throw new Error("DATABASE_URL (MongoDB connection string) is required");
-}
-
 /**
  * Next.js dev hot-reloads modules on every edit, so the connection is cached on
  * globalThis to avoid opening a new pool per reload (mirrors the old pg Pool cache).
@@ -16,6 +10,10 @@ const cache =
 
 export async function connectDb() {
   if (cache.conn) return cache.conn;
+  const uri = process.env.DATABASE_URL || process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("DATABASE_URL (MongoDB connection string) is required");
+  }
   if (!cache.promise) {
     mongoose.set("strictQuery", true);
     cache.promise = mongoose
