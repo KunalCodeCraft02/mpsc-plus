@@ -54,7 +54,7 @@ jobs:
         run: npm run build
 
       - name: Install Capacitor
-        run: npm install --no-save -D @capacitor/cli @capacitor/core @capacitor/android
+        run: npm install --no-save -D @capacitor/cli @capacitor/core @capacitor/android @capacitor/assets
 
       - name: Create Capacitor configuration
         shell: bash
@@ -67,6 +67,16 @@ jobs:
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Generate Android branding
+        shell: bash
+        run: |
+          mkdir -p resources
+          cp public/mpsc-pulse-logo.png.jpeg resources/icon.png
+          cp public/mpsc-pulse-logo.png.jpeg resources/splash.png
+          npx capacitor-assets generate --android \
+            --iconBackgroundColor "#eaf0f7" \
+            --splashBackgroundColor "#eaf0f7"
 
       - name: Align Kotlin dependencies
         shell: bash
