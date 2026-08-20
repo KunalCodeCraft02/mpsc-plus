@@ -68,6 +68,27 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
+      - name: Align Kotlin dependencies
+        shell: bash
+        run: |
+          cat >> android/build.gradle <<'EOF'
+
+          // Capacitor plugins may request legacy split Kotlin stdlib artifacts.
+          subprojects {
+            configurations.configureEach {
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+            }
+            configurations.configureEach {
+              resolutionStrategy.eachDependency { dependency ->
+                if (dependency.requested.group == 'org.jetbrains.kotlin') {
+                  dependency.useVersion '1.8.22'
+                }
+              }
+            }
+          }
+          EOF
+
       - name: Sync Android project
         run: npx cap sync android
 
