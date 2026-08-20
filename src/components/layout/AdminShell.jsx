@@ -103,8 +103,8 @@ export function AdminSidebar({ onNavigate, className }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   return (
-    <aside className={cn("flex h-full w-[268px] flex-col bg-[#171a2b]", className)}>
-      <div className="flex items-center gap-2.5 px-5 py-5">
+    <aside className={cn("flex h-full w-[min(268px,calc(100vw-3rem))] flex-col bg-[#171a2b]", className)}>
+      <div className="flex items-center gap-2.5 px-5 pb-5 pt-[calc(1.25rem+var(--sat))]">
         <PulseMark size={34} />
         <div className="leading-none">
           <p className="text-[14.5px] font-bold tracking-tight text-white">
@@ -156,7 +156,7 @@ export function AdminHeader({ title, subtitle, breadcrumbs = [], actions, onOpen
   const { t } = useI18n();
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/92 backdrop-blur-lg">
-      <div className="flex min-h-16 flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
+      <div className="flex min-h-16 flex-wrap items-center gap-3 px-3 py-3 sm:px-6">
         <button
           onClick={onOpenMenu}
           className="-ml-1 rounded-xl p-2 text-ink transition hover:bg-slate-100 xl:hidden"
@@ -186,7 +186,7 @@ export function AdminHeader({ title, subtitle, breadcrumbs = [], actions, onOpen
           </h1>
           {subtitle ? <p className="truncate text-[12px] text-muted">{subtitle}</p> : null}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 pl-10 sm:w-auto sm:pl-0">
           <Link
             href="/admin/audit"
             className="hidden items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-[12.5px] font-semibold text-slate-600 transition hover:border-brand-300 hover:text-brand-700 sm:inline-flex"
@@ -215,7 +215,7 @@ export function AdminShell({ title, subtitle, breadcrumbs, actions, children }) 
             <div className="relative h-full">
               <button
                 onClick={() => setOpen(false)}
-                className="absolute -right-11 top-3 rounded-xl bg-white/90 p-2 text-ink shadow"
+                className="absolute -right-11 top-[calc(0.75rem+var(--sat))] rounded-xl bg-white/90 p-2 text-ink shadow"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -233,7 +233,7 @@ export function AdminShell({ title, subtitle, breadcrumbs, actions, children }) 
           actions={actions}
           onOpenMenu={() => setOpen(true)}
         />
-        <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-5 sm:px-6">{children}</main>
+        <main className="mx-auto w-full max-w-[1500px] min-w-0 flex-1 overflow-x-hidden px-3 py-4 sm:px-6 sm:py-5">{children}</main>
       </div>
     </div>
   );
