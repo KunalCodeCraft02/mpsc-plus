@@ -10,6 +10,14 @@ import {
 } from "react";
 import { authService, setToken, getToken } from "@/services/api";
 import { levelFor, POLICY } from "@/lib/config";
+import {
+  createUserWithEmailAndPassword,
+  firebaseAuth,
+  isFirebaseConfigured,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "@/lib/firebase";
 
 const AuthContext = createContext(null);
 const ONBOARD_KEY = "mpscpulse.onboarded";
@@ -38,10 +46,54 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    refresh();
+    if (!isFirebaseConfigured) {
+      Promise.resolve().then(refresh);
+      return undefined;
+    }
+
+    return onAuthStateChanged(firebaseAuth(), async (firebaseUser) => {
+      if (!firebaseUser) {
+        if (!getToken()) {
+          setUser(null);
+          setLoading(false);
+        }
+        return;
+      }
+      if (getToken()) {
+        await refresh();
+        return;
+      }
+      try {
+        const data = await authService.firebaseSync(
+          { language: "en", platform: "web" },
+          await firebaseUser.getIdToken(),
+        );
+        setToken(data.token);
+        setUser(data.user);
+      } catch {
+        setToken(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    });
   }, [refresh]);
 
   const login = useCallback(async (payload) => {
+    if (isFirebaseConfigured && payload.identifier.includes("@")) {
+      const credential = await signInWithEmailAndPassword(
+        firebaseAuth(),
+        payload.identifier.trim().toLowerCase(),
+        payload.password,
+      );
+      const data = await authService.firebaseSync(
+        { language: "en", platform: "web" },
+        await credential.user.getIdToken(),
+      );
+      setToken(data.token);
+      setUser(data.user);
+      return data.user;
+    }
     const data = await authService.login(payload);
     setToken(data.token);
     setUser(data.user);
@@ -49,13 +101,41 @@ export function AuthProvider({ children }) {
   }, []);
 
   const register = useCallback(async (payload) => {
+    if (isFirebaseConfigured) {
+      const credential = await createUserWithEmailAndPassword(
+        firebaseAuth(),
+        payload.email,
+        payload.password,
+      );
+      const data = await authService.firebaseSync(
+        {
+          name: payload.name,
+          mobile: payload.mobile,
+          language: payload.language,
+          termsVersion: payload.termsVersion,
+          privacyVersion: payload.privacyVersion,
+          platform: payload.platform,
+        },
+        await credential.user.getIdToken(),
+      );
+      setToken(data.token);
+      setUser(data.user);
+      return data.user;
+    }
     const data = await authService.register(payload);
     setToken(data.token);
     setUser(data.user);
     return data.user;
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    if (isFirebaseConfigured) {
+      try {
+        await signOut(firebaseAuth());
+      } catch {
+        /* The application token is still cleared below. */
+      }
+    }
     setToken(null);
     setUser(null);
   }, []);

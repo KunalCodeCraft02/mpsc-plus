@@ -38,6 +38,15 @@ export const forgotSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
 });
 
+export const firebaseProfileSchema = z.object({
+  name: z.string().trim().min(3, "Enter your full name").max(120).optional(),
+  mobile: z.string().trim().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number").optional(),
+  language: z.enum(["en", "mr"]).default("en"),
+  termsVersion: z.string().optional(),
+  privacyVersion: z.string().optional(),
+  platform: z.string().optional(),
+});
+
 export const acceptPolicySchema = z.object({
   termsVersion: z.string().min(1),
   privacyVersion: z.string().min(1),

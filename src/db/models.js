@@ -92,7 +92,8 @@ const userSchema = autoIncSchema(
      * second such account.
      */
     username: { type: String, maxlength: 60 },
-    passwordHash: { type: String, required: true },
+    firebaseUid: { type: String, maxlength: 128 },
+    passwordHash: { type: String, required: false, default: null },
     role: { type: String, required: true, default: "STUDENT" },
     language: { type: String, required: true, default: "en" },
     avatarUrl: { type: String, default: null },
@@ -118,6 +119,14 @@ const userSchema = autoIncSchema(
         unique: true,
         name: "users_username_uq",
         partialFilterExpression: { username: { $type: "string" } },
+      },
+    ],
+    [
+      { firebaseUid: 1 },
+      {
+        unique: true,
+        name: "users_firebase_uid_uq",
+        partialFilterExpression: { firebaseUid: { $type: "string" } },
       },
     ],
     [{ xp: -1 }, { name: "users_xp_idx" }],

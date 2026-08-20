@@ -14,6 +14,7 @@ import { Button, Input, PasswordInput, Select, Checkbox, Alert, ProgressBar } fr
 import { registerSchema } from "@/server/validation";
 import { POLICY, LANGUAGES } from "@/lib/config";
 import { cn } from "@/lib/utils";
+import { firebaseErrorMessage } from "@/lib/firebaseErrors";
 
 const STEPS = [
   { key: "stepBasics", fields: ["name", "mobile", "email"] },
@@ -70,7 +71,7 @@ export default function RegisterPage() {
       toast.success(`${t("app.name")} — ${user.name.split(" ")[0]}, welcome aboard!`);
       router.replace("/home");
     } catch (e) {
-      setServerError(e.message);
+      setServerError(e.code ? firebaseErrorMessage(e) : e.message);
       if (e.data?.field === "email") setStep(0);
       if (e.data?.field === "mobile") setStep(0);
     }

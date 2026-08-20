@@ -9,20 +9,29 @@ import { AuthShell } from "@/components/layout/AuthShell";
 import { useI18n } from "@/context/I18nContext";
 import { Button, Input, Alert } from "@/components/ui";
 import { forgotSchema } from "@/server/validation";
+import { firebaseAuth, isFirebaseConfigured, sendPasswordResetEmail } from "@/lib/firebase";
+import { firebaseErrorMessage } from "@/lib/firebaseErrors";
 
 export default function ForgotPasswordPage() {
   const { t } = useI18n();
   const [sent, setSent] = useState(false);
+  const [serverError, setServerError] = useState(null);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(forgotSchema), defaultValues: { email: "" } });
 
-  const onSubmit = async () => {
-    // Always show the same neutral confirmation so account existence is never revealed.
-    await new Promise((r) => setTimeout(r, 700));
-    setSent(true);
+  const onSubmit = async (values) => {
+    setServerError(null);
+    try {
+      if (!isFirebaseConfigured) throw new Error("Firebase authentication is not configured");
+      await sendPasswordResetEmail(firebaseAuth(), values.email);
+      setSent(true);
+    } catch (error) {
+      setSent(false);
+      setServerError(firebaseErrorMessage(error));
+    }
   };
 
   return (
@@ -43,7 +52,9 @@ export default function ForgotPasswordPage() {
             {t("auth.forgotSent")}
           </Alert>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4" noValidate>
+          <>
+            {serverError ? <Alert tone="danger" className="mt-6">{serverError}</Alert> : null}
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4" noValidate>
             <Input
               label={t("auth.email")}
               placeholder="you@example.com"
@@ -55,7 +66,8 @@ export default function ForgotPasswordPage() {
             <Button type="submit" size="lg" fullWidth loading={isSubmitting}>
               {t("auth.sendLink")}
             </Button>
-          </form>
+            </form>
+          </>
         )}
 
         <Link

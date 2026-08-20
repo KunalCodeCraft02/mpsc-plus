@@ -60,6 +60,10 @@ export const authService = {
   acceptPolicy: (payload) =>
     api.post("/auth/accept-policy", payload).then((r) => r.data),
   updateProfile: (payload) => api.patch("/auth/me", payload).then((r) => r.data),
+  firebaseSync: (payload, firebaseToken) =>
+    api.post("/auth/firebase", payload, {
+      headers: { Authorization: `Bearer ${firebaseToken}` },
+    }).then((r) => r.data),
 };
 
 /* --------------------------- Catalog -------------------------- */
