@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { BrandLock, PulseMark } from "./Brand";
 import { useI18n } from "@/context/I18nContext";
 
 export function AuthShell({ children, side = true }) {
   const { t } = useI18n();
+  const router = useRouter();
   return (
     <div className="flex min-h-dvh bg-[#f6f7fb]">
       {side ? (
@@ -46,8 +48,16 @@ export function AuthShell({ children, side = true }) {
       ) : null}
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <div className="flex min-h-16 items-center justify-between px-5 pb-4 pt-[calc(1rem+var(--sat))] lg:hidden">
-          <Link href="/">
+        <div className="flex min-h-16 items-center gap-2 px-5 pb-4 pt-[calc(1rem+var(--sat))] lg:hidden">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="-ml-2 rounded-xl p-2 text-ink transition hover:bg-slate-100"
+            aria-label={t("common.back")}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <Link href="/" className="min-w-0">
             <BrandLock size={34} showTagline={false} />
           </Link>
         </div>
