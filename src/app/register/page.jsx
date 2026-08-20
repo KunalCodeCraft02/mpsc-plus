@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserPlus, ArrowRight, ArrowLeft, Check, Mail, Phone, User } from "lucide-react";
+import { UserPlus, ArrowRight, ArrowLeft, Check, Mail, MailCheck, Phone, User, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { useI18n } from "@/context/I18nContext";
 import { useAuth, markOnboarded } from "@/context/AuthContext";
@@ -14,7 +14,6 @@ import { Button, Input, PasswordInput, Select, Checkbox, Alert, ProgressBar } fr
 import { registerSchema } from "@/server/validation";
 import { POLICY, LANGUAGES } from "@/lib/config";
 import { cn } from "@/lib/utils";
-import { firebaseErrorMessage } from "@/lib/firebaseErrors";
 
 const STEPS = [
   { key: "stepBasics", fields: ["name", "mobile", "email"] },
@@ -24,11 +23,19 @@ const STEPS = [
 
 export default function RegisterPage() {
   const { t, lang, setLang } = useI18n();
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, verifyOtp, resendOtp } = useAuth();
   const toast = useToast();
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [serverError, setServerError] = useState(null);
+  // Set once the profile is accepted and a code has been emailed; the wizard is
+  // replaced by the verification panel until the code is confirmed.
+  const [pending, setPending] = useState(null);
+  const [code, setCode] = useState("");
+  const [codeError, setCodeError] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
 
   const form = useForm({
     resolver: zodResolver(registerSchema),
@@ -62,22 +69,131 @@ export default function RegisterPage() {
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
   };
 
+  useEffect(() => {
+    if (cooldown <= 0) return undefined;
+    const id = setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearInterval(id);
+  }, [cooldown]);
+
   const onSubmit = async (values) => {
     setServerError(null);
     try {
-      const user = await registerUser(values);
-      setLang(values.language);
-      markOnboarded();
-      toast.success(`${t("app.name")} — ${user.name.split(" ")[0]}, welcome aboard!`);
-      router.replace("/home");
+      const res = await registerUser(values);
+      setPending({ email: res.email, name: values.name, language: values.language });
+      setCode("");
+      setCodeError(null);
+      setCooldown(res.resendAfterSec || 60);
     } catch (e) {
-      setServerError(e.code ? firebaseErrorMessage(e) : e.message);
+      setServerError(e.message);
       if (e.data?.field === "email") setStep(0);
       if (e.data?.field === "mobile") setStep(0);
     }
   };
 
+  const onVerify = async (event) => {
+    event.preventDefault();
+    setCodeError(null);
+    setVerifying(true);
+    try {
+      const user = await verifyOtp({ email: pending.email, code: code.trim() });
+      setLang(pending.language);
+      markOnboarded();
+      toast.success(`${t("app.name")} — ${user.name.split(" ")[0]}, welcome aboard!`);
+      router.replace("/home");
+    } catch (e) {
+      setCodeError(e.message);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const onResend = async () => {
+    setCodeError(null);
+    setResending(true);
+    try {
+      const res = await resendOtp({ email: pending.email });
+      setCode("");
+      setCooldown(res.resendAfterSec || 60);
+      toast.success(t("auth.otpResent"));
+    } catch (e) {
+      setCodeError(e.message);
+    } finally {
+      setResending(false);
+    }
+  };
+
   const agreed = watch("acceptedTerms");
+
+  /* Email verification — same shell and controls as the wizard it replaces. */
+  if (pending) {
+    return (
+      <AuthShell>
+        <div className="animate-fade-up">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+            <MailCheck className="h-5.5 w-5.5" style={{ height: 22, width: 22 }} />
+          </span>
+          <h1 className="mt-5 text-2xl font-bold tracking-tight text-ink">{t("auth.verifyTitle")}</h1>
+          <p className="mt-1.5 text-[14px] leading-relaxed text-muted">
+            {t("auth.verifySub")}{" "}
+            <span className="font-bold text-ink">{pending.email}</span>
+          </p>
+
+          {codeError ? (
+            <Alert tone="danger" className="mt-5" role="alert">
+              {codeError}
+            </Alert>
+          ) : null}
+
+          <form onSubmit={onVerify} className="mt-6 space-y-4" noValidate>
+            <Input
+              label={t("auth.otpLabel")}
+              placeholder="123456"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              leftIcon={ShieldCheck}
+              className="tracking-[0.4em] font-bold"
+              hint={t("auth.otpHint")}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            />
+            <Button
+              type="submit"
+              size="lg"
+              fullWidth
+              loading={verifying}
+              disabled={code.length !== 6}
+            >
+              {verifying ? t("auth.verifying") : t("auth.verify")}
+            </Button>
+          </form>
+
+          <div className="mt-5 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={onResend}
+              disabled={cooldown > 0 || resending}
+              className="text-[13.5px] font-bold text-brand-600 disabled:text-slate-400 hover:underline disabled:no-underline"
+            >
+              {cooldown > 0 ? `${t("auth.resendIn")} ${cooldown}s` : t("auth.resend")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPending(null);
+                setCodeError(null);
+                setStep(0);
+              }}
+              className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-muted hover:underline"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t("auth.changeEmail")}
+            </button>
+          </div>
+        </div>
+      </AuthShell>
+    );
+  }
 
   return (
     <AuthShell>

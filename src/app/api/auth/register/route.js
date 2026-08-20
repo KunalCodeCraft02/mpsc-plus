@@ -1,9 +1,17 @@
-import { connectDb, User, ser } from "@/db";
-import { handler, body, created, fail } from "@/server/http";
-import { hashPassword, signToken, publicUser } from "@/server/auth";
+import { connectDb, User } from "@/db";
+import { handler, body, ok, fail } from "@/server/http";
+import { hashPassword } from "@/server/auth";
+import { issueOtp, PURPOSE } from "@/server/otp";
 import { registerSchema } from "@/server/validation";
 import { POLICY } from "@/lib/config";
 
+/**
+ * Step 1 of signup: validate the profile, then email a verification code.
+ *
+ * No `users` document is created here — the profile waits in the OTP record
+ * (with the password already bcrypt-hashed) until `/api/auth/verify-otp`
+ * confirms the address.
+ */
 export const POST = handler(async (request) => {
   const raw = await body(request);
   const data = registerSchema.parse(raw);
@@ -19,25 +27,29 @@ export const POST = handler(async (request) => {
     return fail(409, `An account already exists with this ${clash}.`, { field: clash });
   }
 
+  // Hashed now so the plaintext password is never stored, not even temporarily.
   const passwordHash = await hashPassword(data.password);
 
-  const user = ser(
-    (
-      await User.create({
-        name: data.name,
-        email: data.email,
-        mobile: data.mobile,
-        passwordHash,
-        role: "STUDENT",
-        language: data.language,
-        termsVersion: data.termsVersion || POLICY.termsVersion,
-        privacyVersion: data.privacyVersion || POLICY.privacyVersion,
-        acceptedAt: new Date(),
-        platform: data.platform || "web",
-      })
-    ).toObject(),
-  );
+  const { expiresInSec, resendAfterSec } = await issueOtp({
+    email: data.email,
+    purpose: PURPOSE.REGISTER,
+    name: data.name,
+    payload: {
+      name: data.name,
+      email: data.email,
+      mobile: data.mobile,
+      passwordHash,
+      language: data.language,
+      termsVersion: data.termsVersion || POLICY.termsVersion,
+      privacyVersion: data.privacyVersion || POLICY.privacyVersion,
+      platform: data.platform || "web",
+    },
+  });
 
-  const token = signToken({ sub: String(user.id), role: user.role });
-  return created({ token, user: publicUser(user) });
+  return ok({
+    pendingVerification: true,
+    email: data.email,
+    expiresInSec,
+    resendAfterSec,
+  });
 });

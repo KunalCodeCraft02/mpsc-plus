@@ -12,7 +12,6 @@ import { useToast } from "@/context/ToastContext";
 import { useQuery } from "@/hooks/useQuery";
 import { Button, Input, PasswordInput, Alert } from "@/components/ui";
 import { loginSchema } from "@/server/validation";
-import { firebaseErrorMessage } from "@/lib/firebaseErrors";
 
 export default function LoginPage() {
   const { t } = useI18n();
@@ -39,7 +38,7 @@ export default function LoginPage() {
       const next = params.next;
       router.replace(next || (user.role === "ADMIN" ? "/admin" : "/home"));
     } catch (e) {
-      setServerError(e.code ? firebaseErrorMessage(e) : e.message);
+      setServerError(e.message);
     }
   };
 
