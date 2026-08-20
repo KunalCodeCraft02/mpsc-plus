@@ -31,6 +31,11 @@ export function ser(input) {
   if (input == null) return input;
   if (Array.isArray(input)) return input.map(ser);
   if (typeof input !== "object" || input instanceof Date) return input;
+  // A Mongoose document keeps its fields in an internal `_doc`, so spreading one
+  // yields `{ $__, _doc }` and every field reads as undefined. Callers must pass
+  // a lean/plain object; converting here stops a missed `.toObject()` from
+  // silently turning a real record into a blank one.
+  if (typeof input.toObject === "function") input = input.toObject();
   const { _id, __v, ...rest } = input;
   return _id === undefined ? rest : { id: _id, ...rest };
 }
