@@ -6,13 +6,12 @@ import { POLICY } from "@/lib/config";
  * Administrator provisioning.
  *
  * The handle and password come from the environment so they can be rotated
- * without a code change; the values below are the project defaults. Nothing in
- * this file is ever imported by client code — it runs only inside route
+ * without a code change. Nothing in this file is ever imported by client code — it runs only inside route
  * handlers — and the password is bcrypt-hashed before it reaches MongoDB, so
  * the plaintext is never stored or returned by any API.
  */
 const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || "mpscvb").trim().toLowerCase();
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "mpscvb@2026";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const ADMIN_NAME = process.env.ADMIN_NAME || "MPSC Pulse Admin";
 
 /** Internal, non-advertised address — the admin signs in with the username. */
@@ -25,6 +24,9 @@ const LEGACY_ADMIN_EMAIL = "admin@mpscpulse.in";
 let ensurePromise = null;
 
 async function run() {
+  if (!ADMIN_PASSWORD) {
+    throw new Error("ADMIN_PASSWORD server configuration is required");
+  }
   await connectDb();
   const passwordHash = await hashPassword(ADMIN_PASSWORD);
 
