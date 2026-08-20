@@ -46,7 +46,7 @@ export function AuthShell({ children, side = true }) {
       ) : null}
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center justify-between px-5 py-4 safe-top lg:hidden">
+        <div className="flex min-h-16 items-center justify-between px-5 pb-4 pt-[calc(1rem+var(--sat))] lg:hidden">
           <Link href="/">
             <BrandLock size={34} showTagline={false} />
           </Link>

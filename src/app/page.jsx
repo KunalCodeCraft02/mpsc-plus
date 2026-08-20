@@ -4,24 +4,14 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  PlayCircle,
-  FileText,
-  ClipboardCheck,
   Trophy,
   Flame,
   ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import { PulseMark } from "@/components/layout/Brand";
 import { useI18n } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
-import { Button, Badge } from "@/components/ui";
-
-const FEATURES = [
-  { icon: PlayCircle, key: "welcome.feature1", tone: "bg-brand-50 text-brand-600" },
-  { icon: FileText, key: "welcome.feature2", tone: "bg-accent-50 text-accent-600" },
-  { icon: ClipboardCheck, key: "welcome.feature3", tone: "bg-teal-50 text-teal-600" },
-];
+import { Button } from "@/components/ui";
 
 export default function WelcomePage() {
   const { t } = useI18n();
@@ -37,8 +27,8 @@ export default function WelcomePage() {
       <div className="pointer-events-none absolute -right-28 -top-28 h-80 w-80 rounded-full bg-white/[0.06]" />
       <div className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-accent-500/15" />
 
-      <div className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col px-6 pb-8 pt-10 safe-top safe-bottom lg:max-w-6xl lg:justify-center lg:pt-16">
-        <div className="lg:grid lg:grid-cols-2 lg:items-center lg:gap-16">
+      <div className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-6 pb-8 pt-[calc(2.5rem+var(--sat))] safe-bottom lg:max-w-2xl lg:pt-16">
+        <div className="mx-auto w-full">
           <div>
             {/* Brand */}
             <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
@@ -78,45 +68,11 @@ export default function WelcomePage() {
             </div>
           </div>
 
-          {/* Feature panel */}
-          <div className="mt-12 lg:mt-0">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm">
-              <Badge tone="dark" className="bg-white/15 text-white" icon={Sparkles}>
-                {t("welcome.trustedBy")}
-              </Badge>
-              <div className="mt-4 space-y-3">
-                {FEATURES.map((f) => {
-                  const Icon = f.icon;
-                  return (
-                    <div key={f.key} className="flex items-center gap-3.5 rounded-2xl bg-white p-3.5 text-ink shadow-soft">
-                      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${f.tone}`}>
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <p className="text-[14px] font-bold leading-snug">{t(f.key)}</p>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-white/10 p-3.5">
-                  <Trophy className="h-4.5 w-4.5 text-amber-300" style={{ height: 18, width: 18 }} />
-                  <p className="mt-2 text-[13px] font-bold">XP & Leaderboards</p>
-                  <p className="text-[11px] text-white/60">Ranked on real learning</p>
-                </div>
-                <div className="rounded-2xl bg-white/10 p-3.5">
-                  <Flame className="h-4.5 w-4.5 text-accent-300" style={{ height: 18, width: 18 }} />
-                  <p className="mt-2 text-[13px] font-bold">Study streaks</p>
-                  <p className="text-[11px] text-white/60">Stay consistent daily</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11.5px] text-white/50 lg:justify-start">
-              <Link href="/terms" className="hover:text-white">{t("legal.terms")}</Link>
-              <Link href="/privacy" className="hover:text-white">{t("legal.privacy")}</Link>
-              <Link href="/refund-policy" className="hover:text-white">{t("legal.refund")}</Link>
-              <Link href="/copyright-policy" className="hover:text-white">{t("legal.copyright")}</Link>
-            </div>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11.5px] text-white/50">
+            <Link href="/terms" className="hover:text-white">{t("legal.terms")}</Link>
+            <Link href="/privacy" className="hover:text-white">{t("legal.privacy")}</Link>
+            <Link href="/refund-policy" className="hover:text-white">{t("legal.refund")}</Link>
+            <Link href="/copyright-policy" className="hover:text-white">{t("legal.copyright")}</Link>
           </div>
         </div>
       </div>

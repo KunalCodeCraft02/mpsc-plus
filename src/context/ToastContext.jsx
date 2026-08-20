@@ -52,7 +52,7 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={api}>
       {children}
       <div
-        className="pointer-events-none fixed inset-x-0 top-0 z-[100] flex flex-col items-center gap-2 px-3 pt-3 safe-top sm:items-end sm:px-5"
+        className="pointer-events-none fixed inset-x-0 top-0 z-[100] flex flex-col items-center gap-2 px-3 pb-1 pt-[calc(1rem+var(--sat))] sm:items-end sm:px-5"
         role="status"
         aria-live="polite"
       >
