@@ -31,6 +31,11 @@ export function ser(input) {
   if (input == null) return input;
   if (Array.isArray(input)) return input.map(ser);
   if (typeof input !== "object" || input instanceof Date) return input;
+  // A Mongoose document keeps its fields in an internal `_doc`, so spreading one
+  // yields `{ $__, _doc }` and every field reads as undefined. Callers must pass
+  // a lean/plain object; converting here stops a missed `.toObject()` from
+  // silently turning a real record into a blank one.
+  if (typeof input.toObject === "function") input = input.toObject();
   const { _id, __v, ...rest } = input;
   return _id === undefined ? rest : { id: _id, ...rest };
 }
@@ -92,7 +97,6 @@ const userSchema = autoIncSchema(
      * second such account.
      */
     username: { type: String, maxlength: 60 },
-    firebaseUid: { type: String, maxlength: 128 },
     passwordHash: { type: String, required: false, default: null },
     role: { type: String, required: true, default: "STUDENT" },
     language: { type: String, required: true, default: "en" },
@@ -121,18 +125,44 @@ const userSchema = autoIncSchema(
         partialFilterExpression: { username: { $type: "string" } },
       },
     ],
-    [
-      { firebaseUid: 1 },
-      {
-        unique: true,
-        name: "users_firebase_uid_uq",
-        partialFilterExpression: { firebaseUid: { $type: "string" } },
-      },
-    ],
     [{ xp: -1 }, { name: "users_xp_idx" }],
   ],
 );
 export const User = compile("User", userSchema, "users");
+
+/* ------------------------------------------------------------------ */
+/* Email OTP (signup + password reset verification)                    */
+/* ------------------------------------------------------------------ */
+/**
+ * Short-lived verification codes. Only a bcrypt hash of the code is stored —
+ * never the digits themselves — and the TTL index makes MongoDB purge the
+ * document once it expires, so nothing is retained permanently. `payload`
+ * holds the pending signup profile (with an already-bcrypt-hashed password)
+ * until the code is verified; no `users` document exists before that.
+ */
+const emailOtpSchema = autoIncSchema(
+  "email_otps",
+  {
+    email: { type: String, required: true, maxlength: 190 },
+    purpose: { type: String, required: true, default: "REGISTER" },
+    codeHash: { type: String, required: true },
+    payload: { type: Schema.Types.Mixed, default: null },
+    attempts: { type: Number, required: true, default: 0 },
+    sendCount: { type: Number, required: true, default: 1 },
+    windowStartedAt: { type: Date, required: true, default: Date.now },
+    lastSentAt: { type: Date, required: true, default: Date.now },
+    expiresAt: { type: Date, required: true },
+    createdAt: { type: Date, required: true, default: Date.now },
+  },
+  [
+    // One live code per address + purpose: issuing a new one overwrites (and
+    // therefore invalidates) the previous code.
+    [{ email: 1, purpose: 1 }, { unique: true, name: "email_otps_uq" }],
+    // TTL — MongoDB deletes the document at `expiresAt`.
+    [{ expiresAt: 1 }, { name: "email_otps_ttl_idx", expireAfterSeconds: 0 }],
+  ],
+);
+export const EmailOtp = compile("EmailOtp", emailOtpSchema, "email_otps");
 
 /* ------------------------------------------------------------------ */
 /* Catalog                                                             */
@@ -406,6 +436,7 @@ export const AppSetting = compile("AppSetting", appSettingSchema, "app_settings"
 
 export const ALL_MODELS = {
   User,
+  EmailOtp,
   Course,
   Subject,
   Chapter,

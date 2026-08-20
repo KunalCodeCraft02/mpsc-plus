@@ -60,10 +60,12 @@ export const authService = {
   acceptPolicy: (payload) =>
     api.post("/auth/accept-policy", payload).then((r) => r.data),
   updateProfile: (payload) => api.patch("/auth/me", payload).then((r) => r.data),
-  firebaseSync: (payload, firebaseToken) =>
-    api.post("/auth/firebase", payload, {
-      headers: { Authorization: `Bearer ${firebaseToken}` },
-    }).then((r) => r.data),
+  verifyOtp: (payload) => api.post("/auth/verify-otp", payload).then((r) => r.data),
+  resendOtp: (payload) => api.post("/auth/resend-otp", payload).then((r) => r.data),
+  forgotPassword: (payload) =>
+    api.post("/auth/forgot-password", payload).then((r) => r.data),
+  resetPassword: (payload) =>
+    api.post("/auth/reset-password", payload).then((r) => r.data),
 };
 
 /* --------------------------- Catalog -------------------------- */
