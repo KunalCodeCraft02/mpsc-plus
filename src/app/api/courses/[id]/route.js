@@ -33,7 +33,7 @@ export const GET = handler(async (request, ctx) => {
       Subject.find({ courseId }).sort({ orderIndex: 1, _id: 1 }).lean(),
       Chapter.find({ courseId }).sort({ orderIndex: 1, _id: 1 }).lean(),
       Lecture.find({ courseId, published: true }).sort({ orderIndex: 1, _id: 1 }).lean(),
-      Pdf.find({ courseId, published: true }).sort({ _id: 1 }).lean(),
+      Pdf.find({ courseId, published: true }).sort({ orderIndex: 1, _id: 1 }).lean(),
       Quiz.find(
         { courseId, published: true },
         {

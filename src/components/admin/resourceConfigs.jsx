@@ -5,6 +5,8 @@ import { PlayCircle, FileText, Users, ArrowRight } from "lucide-react";
 import { Badge, StatusBadge, PriceBadge } from "@/components/ui";
 import { formatDate, formatDuration, formatFileSize, formatPrice, extractYoutubeId } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/config";
+import { LectureBuilderSection, PdfBuilderSection } from "./CourseContentBuilder";
+import { adminService } from "@/services/api";
 
 const langOptions = [
   { value: "Marathi", label: "Marathi" },
@@ -60,6 +62,39 @@ export const coursesConfig = (t, tf) => ({
     title: "", titleMr: "", description: "", descriptionMr: "", thumbnailUrl: "",
     instructor: "", category: CATEGORIES[0], language: "Marathi",
     isFree: true, price: 0, currency: "INR", validityDays: 365, published: false,
+    lectures: [], pdfs: [],
+  },
+  // The course entity itself has no lectures/pdfs fields — strip the builder
+  // arrays before they hit the course create/update payload; they're saved
+  // separately via afterSave once the course id is known.
+  fromForm: (v) => {
+    const { lectures: _lectures, pdfs: _pdfs, ...courseFields } = v;
+    return courseFields;
+  },
+  // Course content (lectures/pdfs) isn't part of the course record returned
+  // by GET /admin/courses/:id — fetch it separately when opening Edit.
+  afterLoad: async (values, item) => {
+    const content = await adminService.getCourseContent(item.id);
+    return { ...values, lectures: content.lectures, pdfs: content.pdfs };
+  },
+  afterSave: async (courseId, values) => {
+    await adminService.saveCourseContent(courseId, {
+      lectures: values.lectures || [],
+      pdfs: values.pdfs || [],
+    });
+  },
+  validate: (v) => {
+    for (let i = 0; i < (v.lectures || []).length; i++) {
+      const l = v.lectures[i];
+      if (!l.title?.trim()) return `Lecture ${i + 1}: title is required.`;
+      if (!extractYoutubeId(l.youtubeUrl || "")) return `Lecture ${i + 1}: enter a valid YouTube video URL.`;
+    }
+    for (let i = 0; i < (v.pdfs || []).length; i++) {
+      const p = v.pdfs[i];
+      if (!p.title?.trim()) return `PDF ${i + 1}: title is required.`;
+      if (!p.url?.trim()) return `PDF ${i + 1}: a link is required.`;
+    }
+    return null;
   },
   columns: () => [
     {
@@ -130,7 +165,7 @@ export const coursesConfig = (t, tf) => ({
       title: t("admin.thumbnail"),
       hint: t("admin.thumbSectionHint"),
       fields: [
-        { name: "thumbnailUrl", label: t("admin.thumbUrlLabel"), type: "thumbnail", full: true },
+        { name: "thumbnailUrl", type: "thumbnail", full: true },
       ],
     },
     {
@@ -146,6 +181,16 @@ export const coursesConfig = (t, tf) => ({
     {
       title: t("admin.publishing"),
       fields: [{ name: "published", label: t("common.published"), type: "switch", hint: "Draft courses stay hidden. Publish when the course is ready for students." }],
+    },
+    {
+      title: "Lectures",
+      hint: "Add each lecture with its title and YouTube link (upload the video as Unlisted on YouTube first, then paste the link here). Use the arrows to reorder.",
+      render: ({ form }) => <LectureBuilderSection form={form} />,
+    },
+    {
+      title: "Study Materials / PDFs",
+      hint: "Link the PDFs and study material for this course.",
+      render: ({ form }) => <PdfBuilderSection form={form} />,
     },
   ],
   renderPreview: (v) => (
@@ -347,7 +392,7 @@ export const pdfsConfig = (t, tf) => ({
   filters: [courseFilter(t), { name: "subjectId", label: t("admin.subjects"), source: "subjects" }, publishFilter(t), accessFilter(t)],
   defaults: {
     courseId: "", subjectId: "", chapterId: "", title: "", titleMr: "", description: "",
-    fileUrl: "", fileSizeKb: 0, pageCount: 0, isFree: false, allowDownload: true, published: false,
+    fileUrl: "", fileSizeKb: 0, pageCount: 0, orderIndex: 1, isFree: false, allowDownload: true, published: false,
   },
   columns: () => [
     { key: "title", label: t("common.title"), sortKey: "title", render: (r) => TitleCell(r, tf, `${r.courseTitle || "—"} › ${r.chapterTitle || "—"}`) },
@@ -378,6 +423,7 @@ export const pdfsConfig = (t, tf) => ({
         { name: "fileUrl", label: t("admin.pdfUrl"), placeholder: "https://storage…/notes.pdf", full: true },
         { name: "fileSizeKb", label: `${t("pdf.size")} (KB)`, type: "number" },
         { name: "pageCount", label: t("pdf.pages"), type: "number" },
+        { name: "orderIndex", label: t("common.order"), type: "number" },
       ],
     },
     {

@@ -127,4 +127,10 @@ export const adminService = {
   bulk: (entity, payload) =>
     api.post(`/admin/${entity}/bulk`, payload).then((r) => r.data),
   notify: (payload) => api.post("/admin/notifications", payload).then((r) => r.data),
+  cloudinarySignature: () =>
+    api.post("/admin/uploads/cloudinary-signature").then((r) => r.data),
+  getCourseContent: (courseId) =>
+    api.get(`/admin/courses/${courseId}/content`).then((r) => r.data),
+  saveCourseContent: (courseId, payload) =>
+    api.put(`/admin/courses/${courseId}/content`, payload).then((r) => r.data),
 };

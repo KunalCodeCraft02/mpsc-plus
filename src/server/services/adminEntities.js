@@ -180,6 +180,7 @@ export function toRow(entity, data) {
       storageKey: null,
       fileSizeKb: Math.round(data.fileSizeKb || 0),
       pageCount: Math.round(data.pageCount || 0),
+      orderIndex: data.orderIndex || 1,
       isFree: !!data.isFree,
       allowDownload: !!data.allowDownload,
       published: !!data.published,
