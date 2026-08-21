@@ -46,6 +46,7 @@ export default function CourseDetailPage() {
   const [tab, setTab] = useState("curriculum");
   const [open, setOpen] = useState({});
   const [busy, setBusy] = useState(false);
+  const [paymentBusy, setPaymentBusy] = useState(false);
 
   const load = () => {
     setError(null);
@@ -74,6 +75,79 @@ export default function CourseDetailPage() {
     }
   };
 
+  const purchaseCourse = async () => {
+    const currentCourse = data?.course;
+    if (!currentCourse || paymentBusy) return;
+    setPaymentBusy(true);
+    try {
+      const { keyId, orderId, amount, currency, alreadyPurchased } = await import("@/services/api").then(({ paymentService }) =>
+        paymentService.createOrder({ courseId: Number(id) }),
+      );
+
+      if (alreadyPurchased) {
+        toast.success("Course already purchased");
+        load();
+        return;
+      }
+
+      const scriptId = "razorpay-checkout-script";
+      if (!document.getElementById(scriptId)) {
+        const script = document.createElement("script");
+        script.id = scriptId;
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        document.body.appendChild(script);
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("Unable to load Razorpay checkout"));
+        });
+      }
+
+      if (!window.Razorpay) {
+        throw new Error("Razorpay checkout is unavailable in this browser");
+      }
+
+      const rzp = new window.Razorpay({
+        key: keyId,
+        amount,
+        currency,
+        order_id: orderId,
+        name: "MPSC Pulse",
+        description: currentCourse.title || "Course purchase",
+        handler: async function (response) {
+          try {
+            await import("@/services/api").then(({ paymentService }) =>
+              paymentService.verify({
+                courseId: Number(id),
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+                amount: Number(currentCourse.price || 0),
+              }),
+            );
+            toast.success("Course purchased successfully");
+            load();
+          } catch (e) {
+            toast.error(e.message || "Payment verification failed");
+          }
+        },
+        prefill: { name: "Student" },
+        theme: { color: "#5b34e0" },
+        modal: {
+          ondismiss: () => {
+            toast.info("Payment cancelled. You can try again anytime.");
+          },
+        },
+      });
+
+      rzp.open();
+    } catch (e) {
+      toast.error(e.message);
+    } finally {
+      setPaymentBusy(false);
+    }
+  };
+
   if (error) {
     return (
       <StudentShell title={t("course.details")}>
@@ -89,7 +163,7 @@ export default function CourseDetailPage() {
     );
   }
 
-  const { course, curriculum, hasAccess, enrollment, progressPercent, nextLecture } = data;
+  const { course, curriculum, hasAccess, isPurchased, enrollment, progressPercent, nextLecture } = data;
 
   return (
     <StudentShell title={t("course.details")}>
@@ -105,9 +179,10 @@ export default function CourseDetailPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
             <div className="flex flex-wrap gap-1.5">
-              <Badge tone={course.isFree ? "teal" : "amber"}>
-                {course.isFree ? t("common.free") : formatPrice(course.price, course.currency)}
+              <Badge tone={isPurchased ? "success" : course.isFree ? "teal" : "amber"}>
+                {isPurchased ? t("common.purchased") : course.isFree ? t("common.free") : formatPrice(course.price, course.currency)}
               </Badge>
+              {!course.isFree && !isPurchased ? <Badge tone="dark">{t("common.paid")}</Badge> : null}
               {course.category ? <Badge tone="dark">{course.category}</Badge> : null}
             </div>
             <h1 className="mt-2 text-xl font-bold leading-tight tracking-tight text-white sm:text-2xl">
@@ -170,16 +245,15 @@ export default function CourseDetailPage() {
                 {t("course.enroll")}
               </Button>
             ) : (
-              <Button size="lg" loading={busy} onClick={enroll} rightIcon={ArrowRight}>
-                {t("course.buyFor")} {formatPrice(course.price, course.currency)}
+              <Button size="lg" loading={paymentBusy} onClick={purchaseCourse} rightIcon={ArrowRight}>
+                {paymentBusy ? "Preparing Secure Payment..." : `${t("course.buyFor")} ${formatPrice(course.price, course.currency)}`}
               </Button>
             )}
           </div>
 
           {!hasAccess && !course.isFree ? (
             <Alert tone="info" className="mt-3.5">
-              Free preview lectures are open to everyone. Payment checkout is not enabled in this
-              build — free courses enrol instantly.
+              Secure Razorpay checkout is enabled for this paid course. Your payment is verified on the server before course access is granted.
             </Alert>
           ) : null}
         </div>

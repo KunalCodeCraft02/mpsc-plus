@@ -79,6 +79,12 @@ export const catalogService = {
   enroll: (courseId) => api.post("/enrollments", { courseId }).then((r) => r.data),
 };
 
+export const paymentService = {
+  createOrder: (payload) => api.post("/payments/create-order", payload).then((r) => r.data),
+  verify: (payload) => api.post("/payments/verify", payload).then((r) => r.data),
+  status: (courseId) => api.get(`/payments/status?courseId=${courseId}`).then((r) => r.data),
+};
+
 /* --------------------------- Learning ------------------------- */
 export const learningService = {
   dashboard: () => api.get("/me/dashboard").then((r) => r.data),

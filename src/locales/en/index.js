@@ -27,6 +27,7 @@ const en = {
     all: "All",
     free: "Free",
     paid: "Paid",
+    purchased: "Purchased",
     published: "Published",
     draft: "Draft",
     active: "Active",

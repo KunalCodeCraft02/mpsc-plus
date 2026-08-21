@@ -58,8 +58,8 @@ export function CourseCard({ course, progress, variant = "grid" }) {
             <p className="mt-1 truncate text-[11.5px] text-muted">{course.instructor}</p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge tone={course.isFree ? "teal" : "amber"} size="sm">
-              {course.isFree ? t("common.free") : formatPrice(course.price, course.currency)}
+            <Badge tone={course.isPurchased ? "success" : course.isFree ? "teal" : "amber"} size="sm">
+              {course.isPurchased ? t("common.purchased") : course.isFree ? t("common.free") : formatPrice(course.price, course.currency)}
             </Badge>
             <Badge tone="outline" size="sm">
               {course.lectureCount || 0} {t("course.lectureCount")}
@@ -81,10 +81,15 @@ export function CourseCard({ course, progress, variant = "grid" }) {
       <div className="relative p-2.5 pb-0">
         <Thumb src={course.thumbnailUrl} />
         <div className="absolute left-4 top-4 flex gap-1.5">
-          <Badge tone={course.isFree ? "teal" : "dark"} size="sm">
-            {course.isFree ? t("common.free") : t("common.paid")}
+          <Badge tone={course.isPurchased ? "success" : course.isFree ? "teal" : "dark"} size="sm">
+            {course.isPurchased ? t("common.purchased") : course.isFree ? t("common.free") : t("common.paid")}
           </Badge>
         </div>
+        {!course.isFree && !course.isPurchased ? (
+          <div className="absolute right-4 top-4 flex items-center justify-center rounded-full bg-amber-100/90 p-1.5 text-amber-700 shadow-sm">
+            <span className="text-[10px] font-bold">VIP</span>
+          </div>
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col p-3">
         <p className="line-clamp-2 min-h-[2.5rem] text-[13.5px] font-bold leading-snug text-ink group-hover:text-brand-700">
@@ -110,7 +115,7 @@ export function CourseCard({ course, progress, variant = "grid" }) {
         ) : (
           <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
             <span className="text-[13px] font-bold text-ink">
-              {course.isFree ? t("common.free") : formatPrice(course.price, course.currency)}
+              {course.isPurchased ? t("common.purchased") : course.isFree ? t("common.free") : formatPrice(course.price, course.currency)}
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted">
               <Users className="h-3.5 w-3.5" />

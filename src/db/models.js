@@ -324,6 +324,29 @@ const enrollmentSchema = autoIncSchema(
 );
 export const Enrollment = compile("Enrollment", enrollmentSchema, "enrollments");
 
+const paymentSchema = autoIncSchema(
+  "payments",
+  {
+    userId: { type: Number, required: true },
+    courseId: { type: Number, required: true },
+    amount: { type: Number, required: true, default: 0 },
+    currency: { type: String, required: true, default: "INR" },
+    razorpayOrderId: { type: String, default: null },
+    razorpayPaymentId: { type: String, default: null },
+    razorpaySignature: { type: String, default: null },
+    status: { type: String, required: true, default: "created" },
+    notes: { type: Schema.Types.Mixed, default: {} },
+    createdAt: { type: Date, required: true, default: Date.now },
+    updatedAt: { type: Date, required: true, default: Date.now },
+  },
+  [
+    [{ userId: 1, courseId: 1, status: 1 }, { name: "payments_user_course_idx" }],
+    [{ razorpayOrderId: 1 }, { unique: true, sparse: true, name: "payments_order_uq" }],
+    [{ razorpayPaymentId: 1 }, { unique: true, sparse: true, name: "payments_payment_uq" }],
+  ],
+);
+export const Payment = compile("Payment", paymentSchema, "payments");
+
 const lectureProgressSchema = autoIncSchema(
   "lecture_progress",
   {
@@ -450,6 +473,7 @@ export const ALL_MODELS = {
   Quiz,
   Question,
   Enrollment,
+  Payment,
   LectureProgress,
   QuizAttempt,
   XpEvent,

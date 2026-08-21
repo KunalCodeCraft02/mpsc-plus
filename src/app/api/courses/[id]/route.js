@@ -113,6 +113,7 @@ export const GET = handler(async (request, ctx) => {
     quizzes: quizList.map((q) => ({ ...q, locked: !hasAccess && !q.isFree })),
     pdfs: pdfList.map((p) => ({ ...p, locked: !hasAccess && !p.isFree })),
     enrollment,
+    isPurchased: !!enrollment,
     hasAccess,
     progressPercent,
     nextLecture:

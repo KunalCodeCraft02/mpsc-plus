@@ -1,5 +1,6 @@
 import { connectDb, ser, Course, Lecture, Pdf, Quiz, Enrollment } from "@/db";
 import { handler, ok, query, num, bool } from "@/server/http";
+import { currentUser } from "@/server/auth";
 import { ensureSeeded } from "@/server/seed";
 
 export const dynamic = "force-dynamic";
@@ -94,6 +95,14 @@ export const GET = handler(async (request) => {
 
   const items = ser(rows);
   await attachCounts(items);
+
+  const user = await currentUser(request);
+  if (user && items.length) {
+    const owned = await Enrollment.find({ userId: user.id, courseId: { $in: items.map((item) => item.id) } }, { courseId: 1 })
+      .lean();
+    const ownedIds = new Set(owned.map((item) => item.courseId));
+    for (const item of items) item.isPurchased = ownedIds.has(item.id);
+  }
 
   return ok({
     items,

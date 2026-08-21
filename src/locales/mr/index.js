@@ -27,6 +27,7 @@ const mr = {
     all: "सर्व",
     free: "मोफत",
     paid: "सशुल्क",
+    purchased: "खरेदी केलेला",
     published: "प्रकाशित",
     draft: "मसुदा",
     active: "सक्रिय",
