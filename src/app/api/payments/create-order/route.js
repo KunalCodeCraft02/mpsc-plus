@@ -1,7 +1,7 @@
 import { connectDb, Course, Enrollment, Payment } from "@/db";
 import { handler, body, ok, fail } from "@/server/http";
 import { requireAuth } from "@/server/auth";
-import { createRazorpayOrder, getRazorpayEnv } from "@/server/razorpay";
+import { createRazorpayOrder, fetchRazorpayOrderPayments, getRazorpayEnv } from "@/server/razorpay";
 
 export const dynamic = "force-dynamic";
 
@@ -35,16 +35,55 @@ export const POST = handler(async (request) => {
     .lean();
 
   if (existingPending && existingPending.razorpayOrderId) {
-    const { keyId } = getRazorpayEnv();
-    return ok({
-      alreadyPurchased: false,
-      orderId: existingPending.razorpayOrderId,
-      keyId,
-      amount: existingPending.amount * 100,
-      currency: existingPending.currency || "INR",
-      courseId: id,
-      status: existingPending.status,
-    });
+    // A previous attempt may have actually completed on Razorpay's side even
+    // though our own record never got updated (e.g. the native SDK callback
+    // was dropped before it could reach the verify endpoint). Reusing that
+    // order id would reopen an already-paid order, which Razorpay Checkout
+    // refuses with a generic "Something went wrong" screen. Reconcile first.
+    let orderPayments = [];
+    try {
+      orderPayments = await fetchRazorpayOrderPayments(existingPending.razorpayOrderId);
+    } catch {
+      orderPayments = [];
+    }
+    const capturedPayment = orderPayments.find((p) => p.status === "captured");
+
+    if (capturedPayment) {
+      const paidAmount = Number(capturedPayment.amount || 0) / 100;
+      if (paidAmount === price) {
+        await Payment.findByIdAndUpdate(existingPending._id, {
+          $set: {
+            razorpayPaymentId: capturedPayment.id,
+            status: "captured",
+            updatedAt: new Date(),
+          },
+        });
+        const existingAfter = await Enrollment.findOne({ userId: user.id, courseId: id }).lean();
+        if (!existingAfter) {
+          try {
+            await Enrollment.create({ userId: user.id, courseId: id, progressPercent: 0 });
+          } catch (error) {
+            if (error?.code !== 11000 && error?.code !== 11001) throw error;
+          }
+        }
+        return ok({ alreadyPurchased: true, courseId: id, status: "purchased" });
+      }
+    }
+
+    if (!orderPayments.length) {
+      const { keyId } = getRazorpayEnv();
+      return ok({
+        alreadyPurchased: false,
+        orderId: existingPending.razorpayOrderId,
+        keyId,
+        amount: existingPending.amount * 100,
+        currency: existingPending.currency || "INR",
+        courseId: id,
+        status: existingPending.status,
+      });
+    }
+    // Order has payment attempts but none captured (e.g. failed/cancelled
+    // attempts) — fall through and create a fresh order below.
   }
 
   const order = await createRazorpayOrder({

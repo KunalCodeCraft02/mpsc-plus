@@ -1,7 +1,7 @@
 import { connectDb, Course, Enrollment, Payment } from "@/db";
 import { handler, ok, fail, query } from "@/server/http";
 import { requireAuth } from "@/server/auth";
-import { fetchRazorpayPayment } from "@/server/razorpay";
+import { fetchRazorpayPayment, fetchRazorpayOrderPayments } from "@/server/razorpay";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +19,18 @@ export const GET = handler(async (request) => {
   if (!payment) return ok({ purchased: false, status: "not_started", courseId });
 
   const course = await Course.findById(courseId).lean();
-  const paymentInfo = payment.razorpayPaymentId
+  let paymentInfo = payment.razorpayPaymentId
     ? await fetchRazorpayPayment(payment.razorpayPaymentId).catch(() => null)
     : null;
+
+  // The native SDK callback can be dropped (e.g. activity recreated) before
+  // razorpayPaymentId is ever recorded, even though the payment went through
+  // on Razorpay's side. Look up the order's payments directly in that case.
+  if (!paymentInfo && payment.razorpayOrderId) {
+    const orderPayments = await fetchRazorpayOrderPayments(payment.razorpayOrderId).catch(() => []);
+    paymentInfo = orderPayments.find((p) => p.status === "captured") || null;
+  }
+
   const captured = payment.status === "captured" || paymentInfo?.status === "captured";
   const amountMatches = Number((paymentInfo?.amount || payment.amount * 100) / 100) === Number(course?.price || 0);
 
@@ -32,7 +41,11 @@ export const GET = handler(async (request) => {
       if (error?.code !== 11000 && error?.code !== 11001) throw error;
     }
     await Payment.findByIdAndUpdate(payment._id, {
-      $set: { status: "captured", updatedAt: new Date() },
+      $set: {
+        status: "captured",
+        razorpayPaymentId: payment.razorpayPaymentId || paymentInfo?.id || null,
+        updatedAt: new Date(),
+      },
     });
     return ok({ purchased: true, status: "purchased", courseId });
   }

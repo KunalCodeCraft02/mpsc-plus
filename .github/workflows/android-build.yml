@@ -78,12 +78,30 @@ jobs:
 
           import android.os.Bundle;
           import com.getcapacitor.BridgeActivity;
+          import com.razorpay.PaymentData;
+          import com.razorpay.PaymentResultWithDataListener;
 
-          public class MainActivity extends BridgeActivity {
+          public class MainActivity extends BridgeActivity implements PaymentResultWithDataListener {
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   registerPlugin(RazorpayNativePlugin.class);
                   super.onCreate(savedInstanceState);
+              }
+
+              @Override
+              public void onPaymentSuccess(String paymentId, PaymentData paymentData) {
+                  RazorpayNativePlugin plugin = RazorpayNativePlugin.getInstance();
+                  if (plugin != null) {
+                      plugin.handlePaymentSuccess(paymentId, paymentData);
+                  }
+              }
+
+              @Override
+              public void onPaymentError(int code, String description, PaymentData paymentData) {
+                  RazorpayNativePlugin plugin = RazorpayNativePlugin.getInstance();
+                  if (plugin != null) {
+                      plugin.handlePaymentError(code, description, paymentData);
+                  }
               }
           }
           EOF

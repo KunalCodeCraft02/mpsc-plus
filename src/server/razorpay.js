@@ -75,6 +75,49 @@ export async function createRazorpayOrder({ amount, currency = "INR", receipt, n
   return JSON.parse(text);
 }
 
+export async function fetchRazorpayOrder(orderId) {
+  const { keyId, keySecret } = getRazorpayEnv();
+  if (!keyId || !keySecret) {
+    throw new Error("Razorpay server configuration is missing");
+  }
+
+  const response = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(orderId)}`, {
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error("Order lookup failed");
+  }
+
+  return JSON.parse(text);
+}
+
+export async function fetchRazorpayOrderPayments(orderId) {
+  const { keyId, keySecret } = getRazorpayEnv();
+  if (!keyId || !keySecret) {
+    throw new Error("Razorpay server configuration is missing");
+  }
+
+  const response = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(orderId)}/payments`, {
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error("Order payments lookup failed");
+  }
+
+  const payload = JSON.parse(text);
+  return payload?.items || [];
+}
+
 export async function fetchRazorpayPayment(paymentId) {
   const { keyId, keySecret } = getRazorpayEnv();
   if (!keyId || !keySecret) {
