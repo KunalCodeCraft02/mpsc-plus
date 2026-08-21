@@ -8,6 +8,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.razorpay.Checkout;
+import com.razorpay.PaymentData;
 import com.razorpay.PaymentResultWithDataListener;
 
 import org.json.JSONObject;
@@ -58,21 +59,16 @@ public class RazorpayNativePlugin extends Plugin implements PaymentResultWithDat
     }
 
     @Override
-    public void onPaymentSuccess(String paymentId, String response) {
-        try {
-            JSONObject data = new JSONObject(response);
-            JSObject result = new JSObject();
-            result.put("razorpay_payment_id", paymentId);
-            result.put("razorpay_order_id", data.optString("razorpay_order_id"));
-            result.put("razorpay_signature", data.optString("razorpay_signature"));
-            resolvePending(result);
-        } catch (Exception error) {
-            rejectPending("Invalid Razorpay success response");
-        }
+    public void onPaymentSuccess(String paymentId, PaymentData paymentData) {
+        JSObject result = new JSObject();
+        result.put("razorpay_payment_id", paymentData.getPaymentId());
+        result.put("razorpay_order_id", paymentData.getOrderId());
+        result.put("razorpay_signature", paymentData.getSignature());
+        resolvePending(result);
     }
 
     @Override
-    public void onPaymentError(int code, String description, JSONObject response) {
+    public void onPaymentError(int code, String description, PaymentData paymentData) {
         rejectPending(description == null ? "Payment failed" : description);
     }
 
