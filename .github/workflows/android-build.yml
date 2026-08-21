@@ -68,6 +68,27 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
+      - name: Add native Razorpay Android bridge
+        shell: bash
+        run: |
+          mkdir -p android/app/src/main/java/in/mpscpulse/app
+          cp android-template/RazorpayNativePlugin.java android/app/src/main/java/in/mpscpulse/app/RazorpayNativePlugin.java
+          cat > android/app/src/main/java/in/mpscpulse/app/MainActivity.java <<'EOF'
+          package in.mpscpulse.app;
+
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  registerPlugin(RazorpayNativePlugin.class);
+                  super.onCreate(savedInstanceState);
+              }
+          }
+          EOF
+          printf '\nimplementation "com.razorpay:checkout:1.6.41"\n' >> android/app/build.gradle
+
       - name: Generate Android branding
         shell: bash
         run: |

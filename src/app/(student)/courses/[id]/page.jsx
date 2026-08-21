@@ -90,6 +90,33 @@ export default function CourseDetailPage() {
         return;
       }
 
+      const nativeRazorpay = window.Capacitor?.Plugins?.RazorpayNative;
+      if (nativeRazorpay?.open) {
+        const response = await nativeRazorpay.open({
+          key: keyId,
+          amount,
+          currency,
+          orderId,
+          name: "MPSC Pulse",
+          description: currentCourse.title || "Course purchase",
+          prefillName: "Student",
+          themeColor: "#5b34e0",
+        });
+
+        await import("@/services/api").then(({ paymentService }) =>
+          paymentService.verify({
+            courseId: Number(id),
+            orderId: response.razorpay_order_id || orderId,
+            paymentId: response.razorpay_payment_id,
+            signature: response.razorpay_signature,
+            amount: Number(currentCourse.price || 0),
+          }),
+        );
+        toast.success("Course purchased successfully");
+        load();
+        return;
+      }
+
       const scriptId = "razorpay-checkout-script";
       if (!document.getElementById(scriptId)) {
         const script = document.createElement("script");
