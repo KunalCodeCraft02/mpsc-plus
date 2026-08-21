@@ -114,6 +114,35 @@ export default function CourseDetailPage() {
         order_id: orderId,
         name: "MPSC Pulse",
         description: currentCourse.title || "Course purchase",
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true,
+        },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "Pay with UPI apps",
+                instruments: [{ method: "upi" }],
+              },
+              card: {
+                name: "Cards",
+                instruments: [{ method: "card" }],
+              },
+              netbanking: {
+                name: "Netbanking",
+                instruments: [{ method: "netbanking" }],
+              },
+              wallet: {
+                name: "Wallets",
+                instruments: [{ method: "wallet" }],
+              },
+            },
+            sequence: ["block.upi", "block.card", "block.netbanking", "block.wallet"],
+          },
+        },
         handler: async function (response) {
           try {
             await import("@/services/api").then(({ paymentService }) =>
