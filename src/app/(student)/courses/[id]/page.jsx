@@ -51,7 +51,7 @@ export default function CourseDetailPage() {
 
   const load = () => {
     setError(null);
-    catalogService
+    return catalogService
       .course(id)
       .then((d) => {
         setData(d);
@@ -88,7 +88,7 @@ export default function CourseDetailPage() {
 
       if (alreadyPurchased) {
         toast.success("Course already purchased");
-        load();
+        await load();
         return;
       }
 
@@ -118,7 +118,7 @@ export default function CourseDetailPage() {
         );
         toast.success("Course purchased successfully");
         setPaymentMessage("Payment verified. Course access granted.");
-        load();
+        await load();
         return;
       }
 
@@ -190,7 +190,7 @@ export default function CourseDetailPage() {
             );
             toast.success("Course purchased successfully");
             setPaymentMessage("Payment verified. Course access granted.");
-            load();
+            await load();
           } catch (e) {
             setPaymentMessage(`Payment verification failed: ${e.message || "Please check payment status."}`);
             toast.error(e.message || "Payment verification failed");
