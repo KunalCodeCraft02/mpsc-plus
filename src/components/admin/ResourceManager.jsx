@@ -69,11 +69,10 @@ function Field({ field, form, lookups, t }) {
   if (field.type === "thumbnail") {
     return (
       <ThumbnailField
-        label={field.label}
         name={field.name}
         value={value}
         error={err}
-        register={register}
+        setValue={setValue}
         t={t}
       />
     );
@@ -198,7 +197,9 @@ export function ResourceManager({ entity, config, renderExtra }) {
   const openEdit = async (row) => {
     try {
       const { item } = await adminService.get(entity, row.id);
-      form.reset(config.toForm ? config.toForm(item) : { ...config.defaults, ...item });
+      let values = config.toForm ? config.toForm(item) : { ...config.defaults, ...item };
+      if (config.afterLoad) values = await config.afterLoad(values, item);
+      form.reset(values);
       setEditing(item);
     } catch (e) {
       toast.error(e.message);
@@ -206,16 +207,29 @@ export function ResourceManager({ entity, config, renderExtra }) {
   };
 
   const submit = form.handleSubmit(async (values) => {
+    if (config.validate) {
+      const message = config.validate(values);
+      if (message) {
+        toast.error(message);
+        return;
+      }
+    }
     setBusy(true);
     try {
       const payload = config.fromForm ? config.fromForm(values) : values;
+      let id = editing?.id;
       if (editing === "new") {
-        await adminService.create(entity, payload);
+        const { item } = await adminService.create(entity, payload);
+        id = item.id;
+        // If afterSave then fails, the drawer stays open — flip editing to the
+        // created row so a retry updates it instead of creating a duplicate.
+        setEditing(item);
         toast.success(t("admin.created"));
       } else {
         await adminService.update(entity, editing.id, payload);
         toast.success(t("admin.saved"));
       }
+      if (config.afterSave) await config.afterSave(id, values);
       setEditing(null);
       load();
     } catch (e) {
@@ -490,15 +504,19 @@ export function ResourceManager({ entity, config, renderExtra }) {
                 {section.title}
               </h4>
               {section.hint ? <p className="mb-3 text-[12px] text-muted">{section.hint}</p> : <div className="mb-3" />}
-              <div className={section.cols === 2 ? "grid gap-4 sm:grid-cols-2" : "space-y-4"}>
-                {section.fields
-                  .filter((f) => !f.showIf || f.showIf(form.watch()))
-                  .map((f) => (
-                    <div key={f.name} className={f.full ? "sm:col-span-2" : undefined}>
-                      <Field field={f} form={form} lookups={lookups} t={t} />
-                    </div>
-                  ))}
-              </div>
+              {section.render ? (
+                section.render({ form, t })
+              ) : (
+                <div className={section.cols === 2 ? "grid gap-4 sm:grid-cols-2" : "space-y-4"}>
+                  {section.fields
+                    .filter((f) => !f.showIf || f.showIf(form.watch()))
+                    .map((f) => (
+                      <div key={f.name} className={f.full ? "sm:col-span-2" : undefined}>
+                        <Field field={f} form={form} lookups={lookups} t={t} />
+                      </div>
+                    ))}
+                </div>
+              )}
             </section>
           ))}
           {config.renderPreview ? (

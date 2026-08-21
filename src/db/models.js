@@ -262,6 +262,7 @@ const pdfSchema = autoIncSchema(
     storageKey: { type: String, default: null },
     fileSizeKb: { type: Number, default: 0 },
     pageCount: { type: Number, default: 0 },
+    orderIndex: { type: Number, required: true, default: 1 },
     isFree: { type: Boolean, required: true, default: false },
     allowDownload: { type: Boolean, required: true, default: true },
     published: { type: Boolean, required: true, default: false },

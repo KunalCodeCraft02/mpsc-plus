@@ -132,9 +132,28 @@ export const pdfSchema = z.object({
   fileUrl: z.string().trim().min(4, "PDF URL is required"),
   fileSizeKb: z.coerce.number().min(0).default(0),
   pageCount: z.coerce.number().min(0).default(0),
+  orderIndex: z.coerce.number().int().min(1).default(1),
   isFree: z.boolean().default(false),
   allowDownload: z.boolean().default(true),
   published: z.boolean().default(false),
+});
+
+/* -------------------- Admin course-builder content sync ------------------- */
+export const builderLectureSchema = z.object({
+  id: z.coerce.number().int().positive().optional(),
+  title: z.string().trim().min(1, "Lecture title is required").max(220),
+  youtubeUrl: z.string().trim().min(1, "YouTube URL is required"),
+});
+
+export const builderPdfSchema = z.object({
+  id: z.coerce.number().int().positive().optional(),
+  title: z.string().trim().min(1, "PDF title is required").max(220),
+  url: z.string().trim().min(1, "PDF link is required"),
+});
+
+export const courseContentSchema = z.object({
+  lectures: z.array(builderLectureSchema).default([]),
+  pdfs: z.array(builderPdfSchema).default([]),
 });
 
 export const questionSchema = z.object({
