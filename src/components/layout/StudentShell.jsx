@@ -42,6 +42,7 @@ const SIDE_LINKS = [
   { key: "downloads", href: "/materials", icon: FileText },
   { key: "leaderboard", href: "/leaderboard", icon: Trophy },
   { key: "profile", href: "/profile", icon: User },
+  { key: "support", href: "/support", icon: FileText },
   { key: "settings", href: "/settings", icon: Settings },
 ];
 

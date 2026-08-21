@@ -127,6 +127,7 @@ export const GET = handler(async (request) => {
   }
 
   const enrolledIds = new Set(myEnrollments.map((e) => e.courseId));
+  for (const course of recommended) course.isPurchased = enrolledIds.has(course.id);
 
   /* Last 7 days of activity (replaces the generate_series CTE) */
   const since = new Date(Date.now() - 6 * DAY_MS);
