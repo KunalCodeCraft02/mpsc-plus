@@ -15,6 +15,8 @@ import {
   CheckCircle2,
   ArrowRight,
   Layers,
+  RotateCcw,
+  LifeBuoy,
 } from "lucide-react";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { catalogService } from "@/services/api";
@@ -48,6 +50,7 @@ export default function CourseDetailPage() {
   const [busy, setBusy] = useState(false);
   const [paymentBusy, setPaymentBusy] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("idle"); // idle | failed | cancelled
 
   const load = () => {
     setError(null);
@@ -80,6 +83,7 @@ export default function CourseDetailPage() {
     const currentCourse = data?.course;
     if (!currentCourse || paymentBusy) return;
     setPaymentBusy(true);
+    setPaymentStatus("idle");
     setPaymentMessage("Opening secure payment...");
     try {
       const { keyId, orderId, amount, currency, alreadyPurchased } = await import("@/services/api").then(({ paymentService }) =>
@@ -192,6 +196,7 @@ export default function CourseDetailPage() {
             setPaymentMessage("Payment verified. Course access granted.");
             await load();
           } catch (e) {
+            setPaymentStatus("failed");
             setPaymentMessage(`Payment verification failed: ${e.message || "Please check payment status."}`);
             toast.error(e.message || "Payment verification failed");
           }
@@ -200,6 +205,9 @@ export default function CourseDetailPage() {
         theme: { color: "#5b34e0" },
         modal: {
           ondismiss: () => {
+            setPaymentBusy(false);
+            setPaymentStatus("cancelled");
+            setPaymentMessage("Payment cancelled.");
             toast.info("Payment cancelled. You can try again anytime.");
           },
         },
@@ -207,9 +215,12 @@ export default function CourseDetailPage() {
 
       rzp.open();
     } catch (e) {
+      const message = e?.message || "";
+      const cancelled = /cancel/i.test(message);
       setPaymentBusy(false);
-      setPaymentMessage(`Payment could not be completed: ${e.message || "Please try again."}`);
-      toast.error(e.message);
+      setPaymentStatus(cancelled ? "cancelled" : "failed");
+      setPaymentMessage(cancelled ? "Payment cancelled." : `Payment failed: ${message || "Please try again."}`);
+      toast.error(cancelled ? "Payment cancelled" : message || "Payment failed");
     } finally {
       setPaymentBusy(false);
     }
@@ -319,9 +330,30 @@ export default function CourseDetailPage() {
           </div>
 
           {!hasAccess && !course.isFree ? (
-            <Alert tone="info" className="mt-3.5">
+            <Alert tone={paymentStatus === "failed" ? "danger" : paymentStatus === "cancelled" ? "warning" : "info"} className="mt-3.5">
               {paymentMessage || "Secure Razorpay checkout is enabled for this paid course. Your payment is verified on the server before course access is granted."}
             </Alert>
+          ) : null}
+
+          {!hasAccess && !course.isFree && paymentStatus !== "idle" ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button size="sm" variant="primary" leftIcon={RotateCcw} onClick={purchaseCourse} disabled={paymentBusy}>
+                Retry Payment
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setPaymentStatus("idle");
+                  setPaymentMessage("");
+                }}
+              >
+                Back to Course
+              </Button>
+              <Button as={Link} href="/support" size="sm" variant="ghost" leftIcon={LifeBuoy}>
+                Help & Support
+              </Button>
+            </div>
           ) : null}
         </div>
       </Card>

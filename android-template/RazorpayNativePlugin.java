@@ -9,13 +9,27 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.razorpay.Checkout;
 import com.razorpay.PaymentData;
-import com.razorpay.PaymentResultWithDataListener;
 
 import org.json.JSONObject;
 
+// NOTE: Razorpay's Android SDK requires the Activity passed to Checkout.open()
+// to itself implement PaymentResultWithDataListener (it casts the activity
+// internally to deliver onPaymentSuccess/onPaymentError). A Capacitor Plugin
+// class is not the Activity, so MainActivity implements that interface and
+// forwards callbacks here via the static instance below.
 @CapacitorPlugin(name = "RazorpayNative")
-public class RazorpayNativePlugin extends Plugin implements PaymentResultWithDataListener {
+public class RazorpayNativePlugin extends Plugin {
+    private static RazorpayNativePlugin instance;
     private PluginCall pendingCall;
+
+    @Override
+    protected void load() {
+        instance = this;
+    }
+
+    public static RazorpayNativePlugin getInstance() {
+        return instance;
+    }
 
     @PluginMethod
     public void open(PluginCall call) {
@@ -58,8 +72,7 @@ public class RazorpayNativePlugin extends Plugin implements PaymentResultWithDat
         });
     }
 
-    @Override
-    public void onPaymentSuccess(String paymentId, PaymentData paymentData) {
+    public void handlePaymentSuccess(String paymentId, PaymentData paymentData) {
         JSObject result = new JSObject();
         result.put("razorpay_payment_id", paymentData.getPaymentId());
         result.put("razorpay_order_id", paymentData.getOrderId());
@@ -67,8 +80,7 @@ public class RazorpayNativePlugin extends Plugin implements PaymentResultWithDat
         resolvePending(result);
     }
 
-    @Override
-    public void onPaymentError(int code, String description, PaymentData paymentData) {
+    public void handlePaymentError(int code, String description, PaymentData paymentData) {
         rejectPending(description == null ? "Payment failed" : description);
     }
 
