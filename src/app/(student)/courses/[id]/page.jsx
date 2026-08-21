@@ -47,6 +47,7 @@ export default function CourseDetailPage() {
   const [open, setOpen] = useState({});
   const [busy, setBusy] = useState(false);
   const [paymentBusy, setPaymentBusy] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState("");
 
   const load = () => {
     setError(null);
@@ -79,6 +80,7 @@ export default function CourseDetailPage() {
     const currentCourse = data?.course;
     if (!currentCourse || paymentBusy) return;
     setPaymentBusy(true);
+    setPaymentMessage("Opening secure payment...");
     try {
       const { keyId, orderId, amount, currency, alreadyPurchased } = await import("@/services/api").then(({ paymentService }) =>
         paymentService.createOrder({ courseId: Number(id) }),
@@ -92,6 +94,7 @@ export default function CourseDetailPage() {
 
       const nativeRazorpay = window.Capacitor?.Plugins?.RazorpayNative;
       if (nativeRazorpay?.open) {
+        setPaymentMessage("Payment received. Verifying securely...");
         const response = await nativeRazorpay.open({
           key: keyId,
           amount,
@@ -102,6 +105,7 @@ export default function CourseDetailPage() {
           prefillName: "Student",
           themeColor: "#5b34e0",
         });
+        setPaymentBusy(false);
 
         await import("@/services/api").then(({ paymentService }) =>
           paymentService.verify({
@@ -113,6 +117,7 @@ export default function CourseDetailPage() {
           }),
         );
         toast.success("Course purchased successfully");
+        setPaymentMessage("Payment verified. Course access granted.");
         load();
         return;
       }
@@ -171,6 +176,8 @@ export default function CourseDetailPage() {
           },
         },
         handler: async function (response) {
+          setPaymentBusy(false);
+          setPaymentMessage("Payment received. Verifying securely...");
           try {
             await import("@/services/api").then(({ paymentService }) =>
               paymentService.verify({
@@ -182,8 +189,10 @@ export default function CourseDetailPage() {
               }),
             );
             toast.success("Course purchased successfully");
+            setPaymentMessage("Payment verified. Course access granted.");
             load();
           } catch (e) {
+            setPaymentMessage(`Payment verification failed: ${e.message || "Please check payment status."}`);
             toast.error(e.message || "Payment verification failed");
           }
         },
@@ -198,6 +207,8 @@ export default function CourseDetailPage() {
 
       rzp.open();
     } catch (e) {
+      setPaymentBusy(false);
+      setPaymentMessage(`Payment could not be completed: ${e.message || "Please try again."}`);
       toast.error(e.message);
     } finally {
       setPaymentBusy(false);
@@ -309,7 +320,7 @@ export default function CourseDetailPage() {
 
           {!hasAccess && !course.isFree ? (
             <Alert tone="info" className="mt-3.5">
-              Secure Razorpay checkout is enabled for this paid course. Your payment is verified on the server before course access is granted.
+              {paymentMessage || "Secure Razorpay checkout is enabled for this paid course. Your payment is verified on the server before course access is granted."}
             </Alert>
           ) : null}
         </div>
