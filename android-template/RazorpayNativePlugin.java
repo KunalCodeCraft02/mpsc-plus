@@ -23,7 +23,7 @@ public class RazorpayNativePlugin extends Plugin {
     private PluginCall pendingCall;
 
     @Override
-    protected void load() {
+    public void load() {
         instance = this;
     }
 
