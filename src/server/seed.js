@@ -581,6 +581,9 @@ async function runSeed() {
 
 /** Idempotent, single-flight demo seed. */
 export function ensureSeeded() {
+  if (process.env.SEED_DEMO_DATA !== "true") {
+    return Promise.resolve({ seeded: false, reason: "demo-seeding-disabled" });
+  }
   if (!seedPromise) {
     seedPromise = runSeed().catch((err) => {
       seedPromise = null;
