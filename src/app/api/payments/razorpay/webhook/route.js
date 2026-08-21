@@ -38,7 +38,11 @@ export const POST = handler(async (request) => {
   if (status === "captured" || event?.event === "payment.captured") {
     const existing = await Enrollment.findOne({ userId: paymentDoc.userId, courseId: paymentDoc.courseId }).lean();
     if (!existing) {
-      await Enrollment.create({ userId: paymentDoc.userId, courseId: paymentDoc.courseId, progressPercent: 0 });
+      try {
+        await Enrollment.create({ userId: paymentDoc.userId, courseId: paymentDoc.courseId, progressPercent: 0 });
+      } catch (error) {
+        if (error?.code !== 11000 && error?.code !== 11001) throw error;
+      }
     }
     await Payment.findByIdAndUpdate(paymentDoc._id, {
       $set: {
