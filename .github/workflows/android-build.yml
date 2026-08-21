@@ -87,7 +87,7 @@ jobs:
               }
           }
           EOF
-          printf '\nimplementation "com.razorpay:checkout:1.6.41"\n' >> android/app/build.gradle
+          sed -i '/^[[:space:]]*dependencies[[:space:]]*{/a\    implementation "com.razorpay:checkout:1.6.41"' android/app/build.gradle
 
       - name: Generate Android branding
         shell: bash
