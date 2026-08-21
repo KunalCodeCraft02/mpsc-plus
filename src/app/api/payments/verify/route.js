@@ -78,7 +78,11 @@ export const POST = handler(async (request) => {
 
   const existingAfter = await Enrollment.findOne({ userId: user.id, courseId: courseNumber }).lean();
   if (!existingAfter) {
-    await Enrollment.create({ userId: user.id, courseId: courseNumber, progressPercent: 0 });
+    try {
+      await Enrollment.create({ userId: user.id, courseId: courseNumber, progressPercent: 0 });
+    } catch (error) {
+      if (error?.code !== 11000 && error?.code !== 11001) throw error;
+    }
   }
 
   return ok({
