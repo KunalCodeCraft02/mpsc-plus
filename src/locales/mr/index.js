@@ -253,6 +253,7 @@ const mr = {
   },
   quiz: {
     question: "प्रश्न",
+    options: "पर्याय",
     markReview: "पुनरावलोकनासाठी खूण करा",
     marked: "खूण केलेले",
     answered: "उत्तर दिलेले",

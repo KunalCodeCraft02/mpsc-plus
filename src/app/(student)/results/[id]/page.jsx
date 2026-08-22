@@ -195,7 +195,7 @@ export default function ResultPage() {
                     {tf({ text: r.text, textMr: r.textMr }, "text")}
                   </p>
                   <div className="mt-2.5 space-y-2">
-                    {(r.options || []).map((opt, oi) => {
+                    {(tf({ options: r.options, optionsMr: r.optionsMr }, "options") || []).map((opt, oi) => {
                       const isCorrect = oi === r.correctIndex;
                       const isSelected = oi === r.selectedIndex;
                       return (

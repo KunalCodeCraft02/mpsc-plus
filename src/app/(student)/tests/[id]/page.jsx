@@ -283,7 +283,7 @@ export default function QuizAttemptPage() {
             </p>
 
             <div className="mt-4 space-y-2.5">
-              {(current.options || []).map((opt, oi) => {
+              {(tf({ options: current.options, optionsMr: current.optionsMr }, "options") || []).map((opt, oi) => {
                 const selected = answers[current.id] === oi;
                 return (
                   <button
