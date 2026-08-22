@@ -116,8 +116,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p resources
-          cp public/mpsc-pulse-logo.png.jpeg resources/icon.png
-          cp public/mpsc-pulse-logo.png.jpeg resources/splash.png
+          cp public/mpsclogo.jpeg resources/icon.png
+          cp public/mpsclogo.jpeg resources/splash.png
           npx capacitor-assets generate --android \
             --iconBackgroundColor "#eaf0f7" \
             --splashBackgroundColor "#eaf0f7"
