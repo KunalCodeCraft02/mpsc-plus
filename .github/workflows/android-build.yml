@@ -32,6 +32,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -116,8 +117,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p resources
-          cp public/mpsc-pulse-logo.png.jpeg resources/icon.png
-          cp public/mpsc-pulse-logo.png.jpeg resources/splash.png
+          cp public/mpsclogo.jpeg resources/icon.png
+          cp public/mpsclogo.jpeg resources/splash.png
           npx capacitor-assets generate --android \
             --iconBackgroundColor "#eaf0f7" \
             --splashBackgroundColor "#eaf0f7"
@@ -143,12 +144,49 @@ jobs:
           }
           EOF
 
+      - name: Pin androidx.browser to the project's compileSdk
+        # @capacitor/browser's Android module defaults to androidx.browser
+        # 1.9.0, whose AAR metadata requires consumers to compile against
+        # SDK 36 and AGP 8.9.1+ — newer than what this template's compileSdk
+        # (see android/variables.gradle) and AGP classpath (android/build.gradle)
+        # currently provide. androidx.browser 1.9.0 didn't add anything this
+        # app's use of Browser.open() needs, so pin back to 1.8.0 (only needs
+        # compileSdk 34+, per its AAR metadata) via Capacitor's own
+        # variables.gradle override point rather than bumping the whole
+        # Android toolchain.
+        shell: bash
+        run: sed -i "/^ext[[:space:]]*{/a\\    androidxBrowserVersion = '1.8.0'" android/variables.gradle
+
       - name: Sync Android project
         run: npx cap sync android
 
+      - name: Configure Gradle network resilience
+        # Maven Central rate-limits shared GitHub Actions runner IPs (HTTP 429)
+        # fairly often once a build's dependency graph fans out this wide
+        # (AGP 8.7.2 alone pulls ~50 transitive artifacts). None of that is
+        # something our build.gradle controls, so make Gradle itself retry
+        # a throttled resolution instead of failing the build on the first
+        # 429 it sees.
+        shell: bash
+        run: |
+          cat >> android/gradle.properties <<'EOF'
+          org.gradle.internal.repository.max.retries=10
+          org.gradle.internal.repository.initial.backoff=1000
+          EOF
+
       - name: Build debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          GRADLE_RESILIENCE_ARGS="-Dorg.gradle.internal.repository.max.retries=10 -Dorg.gradle.internal.repository.initial.backoff=1000"
+          for attempt in 1 2 3; do
+            if ./gradlew assembleDebug --no-daemon $GRADLE_RESILIENCE_ARGS; then
+              exit 0
+            fi
+            echo "Gradle build failed (attempt $attempt/3) — likely a transient Maven Central rate limit. Retrying..."
+            sleep $((attempt * 45))
+          done
+          echo "Gradle build failed after 3 attempts."
+          exit 1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

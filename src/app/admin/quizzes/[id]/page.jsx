@@ -304,13 +304,13 @@ export default function QuizBuilderPage() {
                 <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">
                   {t("quiz.question")}
                 </p>
-                {/* Two clearly separate language columns — each labeled only
-                    "English" / "मराठी" (never both sharing the same leading
+                {/* Marathi stacked above English, each labeled only
+                    "मराठी" / "English" (never both sharing the same leading
                     word) so it's unambiguous which box takes which language,
                     regardless of the admin's own interface language. */}
-                <div className="grid gap-2.5 sm:grid-cols-2">
-                  <Textarea rows={3} label="English" value={q.text} onChange={(e) => setQ(idx, { text: e.target.value })} placeholder="Which Article deals with…" />
+                <div className="space-y-2.5">
                   <Textarea rows={3} label="मराठी" value={q.textMr} onChange={(e) => setQ(idx, { textMr: e.target.value })} placeholder="…याबाबत कोणते कलम आहे?" />
+                  <Textarea rows={3} label="English" value={q.text} onChange={(e) => setQ(idx, { text: e.target.value })} placeholder="Which Article deals with…" />
                 </div>
               </div>
 
@@ -333,15 +333,7 @@ export default function QuizBuilderPage() {
                       >
                         {Number(q.correctIndex) === oi ? <CheckCircle2 className="h-4 w-4" /> : String.fromCharCode(65 + oi)}
                       </button>
-                      <div className="grid flex-1 gap-1.5 sm:grid-cols-2">
-                        <input
-                          value={opt}
-                          onChange={(e) =>
-                            setQ(idx, { options: q.options.map((o, i) => (i === oi ? e.target.value : o)) })
-                          }
-                          placeholder={`Option ${String.fromCharCode(65 + oi)} — English`}
-                          className="h-10 w-full rounded-xl border border-slate-200 px-3 text-[14px] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
-                        />
+                      <div className="grid flex-1 gap-1.5">
                         <input
                           value={q.optionsMr?.[oi] || ""}
                           onChange={(e) =>
@@ -352,6 +344,14 @@ export default function QuizBuilderPage() {
                             })
                           }
                           placeholder={`Option ${String.fromCharCode(65 + oi)} — मराठी`}
+                          className="h-10 w-full rounded-xl border border-slate-200 px-3 text-[14px] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
+                        />
+                        <input
+                          value={opt}
+                          onChange={(e) =>
+                            setQ(idx, { options: q.options.map((o, i) => (i === oi ? e.target.value : o)) })
+                          }
+                          placeholder={`Option ${String.fromCharCode(65 + oi)} — English`}
                           className="h-10 w-full rounded-xl border border-slate-200 px-3 text-[14px] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
                         />
                       </div>
