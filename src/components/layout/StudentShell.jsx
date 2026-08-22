@@ -105,7 +105,7 @@ export function Sidebar({ onNavigate, mobile = false }) {
         mobile ? "w-72" : "w-64",
       )}
     >
-      <div className="px-5 py-5">
+      <div className={cn("px-5 py-5", mobile && "pt-[calc(1.25rem+var(--sat))]")}>
         <Link href="/home" onClick={onNavigate}>
           <BrandLock size={38} />
         </Link>
@@ -189,7 +189,7 @@ export function Header({ title, showSearch = true, back = false }) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-lg">
+      <header className="safe-top sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 sm:px-5 lg:h-16">
           <button
             onClick={() => setDrawer(true)}
@@ -270,7 +270,7 @@ export function Header({ title, showSearch = true, back = false }) {
             <div className="relative h-full">
               <button
                 onClick={() => setDrawer(false)}
-                className="absolute -right-11 top-3 rounded-xl bg-white/90 p-2 text-ink shadow"
+                className="absolute -right-11 top-[calc(0.75rem+var(--sat))] rounded-xl bg-white/90 p-2 text-ink shadow"
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5" />

@@ -155,7 +155,7 @@ export function AdminSidebar({ onNavigate, className }) {
 export function AdminHeader({ title, subtitle, breadcrumbs = [], actions, onOpenMenu }) {
   const { t } = useI18n();
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/92 backdrop-blur-lg">
+    <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/92 backdrop-blur-lg">
       <div className="flex min-h-16 flex-wrap items-center gap-3 px-3 py-3 sm:px-6">
         <button
           onClick={onOpenMenu}
