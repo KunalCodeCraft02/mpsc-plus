@@ -144,6 +144,19 @@ jobs:
           }
           EOF
 
+      - name: Pin androidx.browser to the project's compileSdk
+        # @capacitor/browser's Android module defaults to androidx.browser
+        # 1.9.0, whose AAR metadata requires consumers to compile against
+        # SDK 36 and AGP 8.9.1+ — newer than what this template's compileSdk
+        # (see android/variables.gradle) and AGP classpath (android/build.gradle)
+        # currently provide. androidx.browser 1.9.0 didn't add anything this
+        # app's use of Browser.open() needs, so pin back to 1.8.0 (only needs
+        # compileSdk 34+, per its AAR metadata) via Capacitor's own
+        # variables.gradle override point rather than bumping the whole
+        # Android toolchain.
+        shell: bash
+        run: sed -i "/^ext[[:space:]]*{/a\\    androidxBrowserVersion = '1.8.0'" android/variables.gradle
+
       - name: Sync Android project
         run: npx cap sync android
 
