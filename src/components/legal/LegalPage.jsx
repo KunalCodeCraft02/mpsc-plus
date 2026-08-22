@@ -17,8 +17,8 @@ export function LegalPage({ docKey }) {
 
   return (
     <div className="min-h-dvh bg-[#f6f7fb]">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/92 backdrop-blur-lg">
-        <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4 safe-top sm:px-6">
+      <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/92 backdrop-blur-lg">
+        <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4 sm:px-6">
           <button
             onClick={() => window.history.back()}
             className="-ml-1.5 rounded-xl p-2 text-ink transition hover:bg-slate-100"

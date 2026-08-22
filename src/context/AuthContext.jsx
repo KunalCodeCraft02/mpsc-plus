@@ -28,9 +28,16 @@ export function AuthProvider({ children }) {
       const data = await authService.me();
       setUser(data.user);
       return data.user;
-    } catch {
-      setToken(null);
-      setUser(null);
+    } catch (e) {
+      // Only drop the session on an actual auth rejection (expired/invalid
+      // token). A network hiccup or timeout — very common right as the app
+      // resumes from the background on Android, before connectivity is back
+      // — is not proof the session is invalid, and used to wipe a perfectly
+      // good token, forcing the user to OTP-login again on every reopen.
+      if (e?.status === 401 || e?.status === 403) {
+        setToken(null);
+        setUser(null);
+      }
       return null;
     } finally {
       setLoading(false);
@@ -41,6 +48,25 @@ export function AuthProvider({ children }) {
     // Deferred so the session restore does not setState inside the effect body.
     Promise.resolve().then(refresh);
   }, [refresh]);
+
+  useEffect(() => {
+    // Retry the session restore once the app/tab regains connectivity or
+    // comes back to the foreground, so a session that survived a transient
+    // network failure (see refresh() above) gets re-validated automatically
+    // instead of leaving the user stuck on a loading/login screen.
+    const retry = () => {
+      if (getToken() && !user) refresh();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") retry();
+    };
+    window.addEventListener("online", retry);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("online", retry);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [user, refresh]);
 
   const login = useCallback(async (payload) => {
     const data = await authService.login(payload);

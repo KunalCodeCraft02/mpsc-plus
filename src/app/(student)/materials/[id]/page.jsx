@@ -9,6 +9,7 @@ import { catalogService } from "@/services/api";
 import { useI18n } from "@/context/I18nContext";
 import { Card, Badge, Button, SectionHeader, PageLoader, ErrorState, Alert } from "@/components/ui";
 import { formatFileSize } from "@/lib/utils";
+import { openExternalUrl } from "@/lib/nativeLinks";
 
 export default function PdfViewerPage() {
   const { id } = useParams();
@@ -85,16 +86,12 @@ export default function PdfViewerPage() {
         ) : null}
 
         <div className="mt-5 flex flex-wrap gap-2.5">
-          <Button as="a" href={pdf.fileUrl} target="_blank" rel="noreferrer" leftIcon={ExternalLink}>
+          <Button onClick={() => openExternalUrl(pdf.fileUrl)} leftIcon={ExternalLink}>
             {t("pdf.open")}
           </Button>
           {pdf.allowDownload && pdf.downloadUrl ? (
             <Button
-              as="a"
-              href={pdf.downloadUrl}
-              target="_blank"
-              rel="noreferrer"
-              download
+              onClick={() => openExternalUrl(pdf.downloadUrl)}
               variant="outline"
               leftIcon={Download}
             >
@@ -121,7 +118,7 @@ export default function PdfViewerPage() {
                 Your browser cannot display this PDF inline. Use “{t("pdf.open")}” to view it in a new
                 tab.
               </p>
-              <Button as="a" href={pdf.fileUrl} target="_blank" rel="noreferrer" size="sm">
+              <Button onClick={() => openExternalUrl(pdf.fileUrl)} size="sm">
                 {t("pdf.open")}
               </Button>
             </div>

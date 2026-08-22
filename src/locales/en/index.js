@@ -255,6 +255,7 @@ const en = {
   },
   quiz: {
     question: "Question",
+    options: "Options",
     markReview: "Mark for review",
     marked: "Marked",
     answered: "Answered",

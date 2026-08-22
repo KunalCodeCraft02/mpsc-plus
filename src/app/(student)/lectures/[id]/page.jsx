@@ -126,6 +126,7 @@ export default function LecturePlayerPage() {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                   loading="lazy"
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
                   className="absolute inset-0 h-full w-full border-0"
                 />
               ) : (

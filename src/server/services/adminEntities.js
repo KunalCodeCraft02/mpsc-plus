@@ -429,6 +429,13 @@ async function syncQuestions(quizId, list = []) {
       text: q.text,
       textMr: q.textMr || null,
       options: q.options,
+      // Store null (not four empty strings) when no Marathi option was
+      // filled in, so the student-facing tf() fallback to English options
+      // kicks in cleanly instead of rendering blank option text.
+      optionsMr:
+        Array.isArray(q.optionsMr) && q.optionsMr.some((o) => String(o || "").trim())
+          ? q.optionsMr
+          : null,
       correctIndex: Number(q.correctIndex) || 0,
       explanation: q.explanation || null,
       marks: Math.round(Number(q.marks) || 1),

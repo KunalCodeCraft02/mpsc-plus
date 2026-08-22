@@ -161,6 +161,7 @@ export const questionSchema = z.object({
   text: z.string().trim().min(3, "Question text is required"),
   textMr: z.string().trim().optional().or(z.literal("")),
   options: z.array(z.string().trim().min(1, "All four options are required")).length(4),
+  optionsMr: z.array(z.string().trim()).length(4).optional(),
   correctIndex: z.coerce.number().int().min(0).max(3),
   explanation: z.string().trim().optional().or(z.literal("")),
   marks: z.coerce.number().min(0.25).max(20).default(1),

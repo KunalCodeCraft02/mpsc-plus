@@ -43,6 +43,7 @@ const emptyQuestion = () => ({
   text: "",
   textMr: "",
   options: ["", "", "", ""],
+  optionsMr: ["", "", "", ""],
   correctIndex: 0,
   explanation: "",
   marks: 2,
@@ -102,6 +103,7 @@ export default function QuizBuilderPage() {
             text: q.text || "",
             textMr: q.textMr || "",
             options: Array.isArray(q.options) ? q.options : ["", "", "", ""],
+            optionsMr: Array.isArray(q.optionsMr) ? q.optionsMr : ["", "", "", ""],
             correctIndex: q.correctIndex ?? 0,
             explanation: q.explanation || "",
             marks: q.marks ?? 1,
@@ -158,6 +160,7 @@ export default function QuizBuilderPage() {
           text: q.text,
           textMr: q.textMr,
           options: q.options,
+          optionsMr: q.optionsMr,
           correctIndex: Number(q.correctIndex),
           explanation: q.explanation,
           marks: Number(q.marks),
@@ -297,34 +300,64 @@ export default function QuizBuilderPage() {
                 </div>
               </div>
 
-              <Textarea rows={2} label={`${t("quiz.question")} (English)`} value={q.text} onChange={(e) => setQ(idx, { text: e.target.value })} placeholder="Which Article deals with…" />
-              <Textarea rows={2} label={`${t("quiz.question")} (मराठी)`} value={q.textMr} onChange={(e) => setQ(idx, { textMr: e.target.value })} />
+              <div>
+                <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">
+                  {t("quiz.question")}
+                </p>
+                {/* Two clearly separate language columns — each labeled only
+                    "English" / "मराठी" (never both sharing the same leading
+                    word) so it's unambiguous which box takes which language,
+                    regardless of the admin's own interface language. */}
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  <Textarea rows={3} label="English" value={q.text} onChange={(e) => setQ(idx, { text: e.target.value })} placeholder="Which Article deals with…" />
+                  <Textarea rows={3} label="मराठी" value={q.textMr} onChange={(e) => setQ(idx, { textMr: e.target.value })} placeholder="…याबाबत कोणते कलम आहे?" />
+                </div>
+              </div>
 
-              <div className="grid gap-2.5 sm:grid-cols-2">
-                {q.options.map((opt, oi) => (
-                  <div key={oi} className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setQ(idx, { correctIndex: oi })}
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[12px] font-bold transition ${
-                        Number(q.correctIndex) === oi
-                          ? "bg-teal-500 text-white"
-                          : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                      }`}
-                      title={t("admin.correctAnswer")}
-                    >
-                      {Number(q.correctIndex) === oi ? <CheckCircle2 className="h-4 w-4" /> : String.fromCharCode(65 + oi)}
-                    </button>
-                    <input
-                      value={opt}
-                      onChange={(e) =>
-                        setQ(idx, { options: q.options.map((o, i) => (i === oi ? e.target.value : o)) })
-                      }
-                      placeholder={`Option ${String.fromCharCode(65 + oi)}`}
-                      className="h-10 w-full rounded-xl border border-slate-200 px-3 text-[14px] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
-                    />
-                  </div>
-                ))}
+              <div>
+                <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">
+                  {t("quiz.options")}
+                </p>
+                <div className="space-y-2.5">
+                  {q.options.map((opt, oi) => (
+                    <div key={oi} className="flex items-start gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setQ(idx, { correctIndex: oi })}
+                        className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[12px] font-bold transition ${
+                          Number(q.correctIndex) === oi
+                            ? "bg-teal-500 text-white"
+                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                        }`}
+                        title={t("admin.correctAnswer")}
+                      >
+                        {Number(q.correctIndex) === oi ? <CheckCircle2 className="h-4 w-4" /> : String.fromCharCode(65 + oi)}
+                      </button>
+                      <div className="grid flex-1 gap-1.5 sm:grid-cols-2">
+                        <input
+                          value={opt}
+                          onChange={(e) =>
+                            setQ(idx, { options: q.options.map((o, i) => (i === oi ? e.target.value : o)) })
+                          }
+                          placeholder={`Option ${String.fromCharCode(65 + oi)} — English`}
+                          className="h-10 w-full rounded-xl border border-slate-200 px-3 text-[14px] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
+                        />
+                        <input
+                          value={q.optionsMr?.[oi] || ""}
+                          onChange={(e) =>
+                            setQ(idx, {
+                              optionsMr: (q.optionsMr?.length === 4 ? q.optionsMr : ["", "", "", ""]).map((o, i) =>
+                                i === oi ? e.target.value : o,
+                              ),
+                            })
+                          }
+                          placeholder={`Option ${String.fromCharCode(65 + oi)} — मराठी`}
+                          className="h-10 w-full rounded-xl border border-slate-200 px-3 text-[14px] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <Textarea rows={2} label={t("admin.explanation")} value={q.explanation} onChange={(e) => setQ(idx, { explanation: e.target.value })} placeholder="Why is this the correct answer?" />

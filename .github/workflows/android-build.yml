@@ -54,7 +54,12 @@ jobs:
         run: npm run build
 
       - name: Install Capacitor
-        run: npm install --no-save -D @capacitor/cli @capacitor/core @capacitor/android @capacitor/assets
+        # @capacitor/core and @capacitor/browser are real dependencies in
+        # package.json (used at runtime by the web bundle to detect the
+        # native shell and open external URLs via the in-app Browser), so
+        # `npm ci` above already installed them. Only the build-only tooling
+        # needs installing here.
+        run: npm install --no-save -D @capacitor/cli @capacitor/android @capacitor/assets
 
       - name: Create Capacitor configuration
         shell: bash
