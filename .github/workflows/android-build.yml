@@ -32,7 +32,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-          cache: gradle
+        # No `cache: gradle` here: setup-java's cache key is computed by
+        # hashing gradle-wrapper.properties/*.gradle* files, but this
+        # workflow generates the entire android/ project later via
+        # `npx cap add android` — nothing Gradle-related exists in the
+        # checkout yet at this point, so the cache step has nothing to hash
+        # and fails outright ("No file ... matched").
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
