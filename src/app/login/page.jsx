@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -10,16 +10,26 @@ import { useI18n } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { useQuery } from "@/hooks/useQuery";
-import { Button, Input, PasswordInput, Alert } from "@/components/ui";
+import { Button, Input, PasswordInput, Alert, PageLoader } from "@/components/ui";
 import { loginSchema } from "@/server/validation";
 
 export default function LoginPage() {
   const { t } = useI18n();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isAdmin, loading } = useAuth();
   const toast = useToast();
   const router = useRouter();
   const params = useQuery();
   const [serverError, setServerError] = useState(null);
+
+  // A WebView can resume with the last route still on /login even though the
+  // token in storage is still valid (e.g. the app was backgrounded right
+  // after a successful login, before the redirect below committed). Bounce
+  // an already-authenticated visitor away instead of showing the form again.
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.replace(params.next || (isAdmin ? "/admin" : "/home"));
+    }
+  }, [loading, isAuthenticated, isAdmin, router, params.next]);
 
   const {
     register,
@@ -41,6 +51,16 @@ export default function LoginPage() {
       setServerError(e.message);
     }
   };
+
+  // Auth state is still restoring, or a redirect to Home is about to fire —
+  // never show the login form during that window.
+  if (loading || isAuthenticated) {
+    return (
+      <AuthShell>
+        <PageLoader />
+      </AuthShell>
+    );
+  }
 
   return (
     <AuthShell>
