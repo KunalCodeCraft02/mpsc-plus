@@ -330,6 +330,20 @@ export default function CourseDetailPage() {
           </div>
 
           {!hasAccess && !course.isFree ? (
+            <p className="mt-2.5 text-[12px] text-muted">
+              By purchasing, you agree to our{" "}
+              <Link href="/terms" className="font-semibold text-brand-700 hover:underline">
+                Terms
+              </Link>{" "}
+              and{" "}
+              <Link href="/refund-policy" className="font-semibold text-brand-700 hover:underline">
+                Refund Policy
+              </Link>
+              .
+            </p>
+          ) : null}
+
+          {!hasAccess && !course.isFree ? (
             <Alert tone={paymentStatus === "failed" ? "danger" : paymentStatus === "cancelled" ? "warning" : "info"} className="mt-3.5">
               {paymentMessage || "Secure Razorpay checkout is enabled for this paid course. Your payment is verified on the server before course access is granted."}
             </Alert>

@@ -205,6 +205,22 @@ export const notificationSchema = z.object({
   courseId: z.coerce.number().int().optional().nullable(),
 });
 
+export const appUpdatePolicySchema = z
+  .object({
+    minRequiredVersionCode: z.coerce.number().int().positive(),
+    latestVersionCode: z.coerce.number().int().positive(),
+    latestVersionName: z.string().trim().min(1, "Enter the version name (e.g. 1.2.0)").max(40),
+    releaseNotes: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
+  })
+  .refine((d) => d.minRequiredVersionCode <= d.latestVersionCode, {
+    message: "The minimum required version cannot be newer than the latest version",
+    path: ["minRequiredVersionCode"],
+  });
+
+export const fcmTokenSchema = z.object({
+  token: z.string().trim().min(20).max(4096),
+});
+
 export const SCHEMAS = {
   courses: courseSchema,
   subjects: subjectSchema,

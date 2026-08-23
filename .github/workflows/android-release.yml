@@ -1,0 +1,305 @@
+name: Android Release AAB
+
+# Production companion to android-build.yml (which stays untouched and keeps
+# building an unsigned debug APK for local ADB testing). This workflow builds
+# a SIGNED App Bundle for upload to Google Play Console, with Firebase Cloud
+# Messaging (FCM) and Google Play In-App Update wired in.
+#
+# Release checklist (see also the "Android app update" card in
+# /admin/settings, which is the actual switch that turns an uploaded release
+# into a mandatory/optional update for installed devices):
+#   1. Bump version_code (integer, strictly greater than the last release —
+#      Google Play rejects a reused or lower versionCode) and version_name
+#      (the human-readable "1.2.0" string) below.
+#   2. Run this workflow.
+#   3. Download the signed AAB artifact and upload it to Google Play Console
+#      (Internal Testing / Production track) yourself — this workflow does
+#      NOT auto-publish to Play, on purpose: an automated Play rollout that
+#      goes wrong is far harder to undo than a manual one.
+#   4. Once Play has finished processing/rolling out that versionCode, set
+#      the matching "Latest versionCode" (and, if this release is required,
+#      an equal "Minimum required versionCode") in /admin/settings — that
+#      save is what actually notifies devices and starts gating them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: Deployed Vercel URL, for example https://mpsc-plus.vercel.app
+        required: true
+        type: string
+      version_code:
+        description: Integer versionCode for this build (must be higher than the last Play release)
+        required: true
+        type: string
+      version_name:
+        description: Human-readable versionName for this build, for example 1.1.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-aab:
+    runs-on: ubuntu-latest
+    env:
+      APP_URL: ${{ inputs.app_url }}
+      VERSION_CODE: ${{ inputs.version_code }}
+      VERSION_NAME: ${{ inputs.version_name }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+        # No `cache: gradle` — same reason as android-build.yml: the android/
+        # project does not exist yet at this point in the job.
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Validate inputs
+        run: |
+          if [ -z "$APP_URL" ]; then
+            echo "Provide app_url when starting this workflow."
+            exit 1
+          fi
+          case "$APP_URL" in
+            https://*) ;;
+            *) echo "APP_URL must use HTTPS."; exit 1 ;;
+          esac
+          case "$VERSION_CODE" in
+            ''|*[!0-9]*) echo "version_code must be a positive integer."; exit 1 ;;
+          esac
+          if [ -z "$VERSION_NAME" ]; then
+            echo "Provide version_name (e.g. 1.1.0)."; exit 1
+          fi
+
+      - name: Check required secrets are present
+        run: |
+          missing=()
+          [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ] && missing+=(ANDROID_KEYSTORE_BASE64)
+          [ -z "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" ] && missing+=(ANDROID_KEYSTORE_PASSWORD)
+          [ -z "${{ secrets.ANDROID_KEY_ALIAS }}" ] && missing+=(ANDROID_KEY_ALIAS)
+          [ -z "${{ secrets.ANDROID_KEY_PASSWORD }}" ] && missing+=(ANDROID_KEY_PASSWORD)
+          [ -z "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" ] && missing+=(GOOGLE_SERVICES_JSON_BASE64)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "Missing required repository secrets: ${missing[*]}"
+            echo "Add them under Settings > Secrets and variables > Actions before running this workflow."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js application
+        run: npm run build
+
+      - name: Install Capacitor
+        run: npm install --no-save -D @capacitor/cli @capacitor/android @capacitor/assets
+
+      - name: Create Capacitor configuration
+        shell: bash
+        run: |
+          mkdir -p www
+          printf '%s\n' '<!doctype html><html><head><meta charset="utf-8"><title>MPSC Pulse</title></head><body></body></html>' > www/index.html
+          npx cap init "MPSC Pulse" "in.mpscpulse.app" --web-dir www
+          rm -f capacitor.config.ts
+          node --input-type=module -e "import fs from 'node:fs'; fs.writeFileSync('capacitor.config.json', JSON.stringify({appId:'in.mpscpulse.app',appName:'MPSC Pulse',webDir:'www',server:{url:process.env.APP_URL,cleartext:false}}, null, 2) + '\\n')"
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Add native Razorpay Android bridge
+        shell: bash
+        run: |
+          mkdir -p android/app/src/main/java/in/mpscpulse/app
+          cp android-template/RazorpayNativePlugin.java android/app/src/main/java/in/mpscpulse/app/RazorpayNativePlugin.java
+          cat > android/app/src/main/java/in/mpscpulse/app/MainActivity.java <<'EOF'
+          package in.mpscpulse.app;
+
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+          import com.razorpay.PaymentData;
+          import com.razorpay.PaymentResultWithDataListener;
+
+          public class MainActivity extends BridgeActivity implements PaymentResultWithDataListener {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  registerPlugin(RazorpayNativePlugin.class);
+                  super.onCreate(savedInstanceState);
+              }
+
+              @Override
+              public void onPaymentSuccess(String paymentId, PaymentData paymentData) {
+                  RazorpayNativePlugin plugin = RazorpayNativePlugin.getInstance();
+                  if (plugin != null) {
+                      plugin.handlePaymentSuccess(paymentId, paymentData);
+                  }
+              }
+
+              @Override
+              public void onPaymentError(int code, String description, PaymentData paymentData) {
+                  RazorpayNativePlugin plugin = RazorpayNativePlugin.getInstance();
+                  if (plugin != null) {
+                      plugin.handlePaymentError(code, description, paymentData);
+                  }
+              }
+          }
+          EOF
+          sed -i '/^[[:space:]]*dependencies[[:space:]]*{/a\    implementation "com.razorpay:checkout:1.6.41"' android/app/build.gradle
+
+      - name: Add google-services.json
+        # Decoded straight from a secret, never committed. Firebase's own
+        # private service-account key never touches this workflow at all —
+        # that lives server-side only, as a Vercel env var used by the
+        # Next.js backend to send FCM messages, not by the Android build.
+        shell: bash
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android/app/google-services.json
+
+      # No separate "apply the Google Services plugin" step is needed: the
+      # Capacitor Android template already declares the
+      # com.google.gms:google-services classpath in the top-level
+      # android/build.gradle, and app/build.gradle already conditionally
+      # applies the plugin whenever google-services.json is present (see the
+      # `try { file('google-services.json') ... apply plugin: ... }` block
+      # the template generates). The step above is all that's required.
+
+      - name: Add POST_NOTIFICATIONS permission (Android 13+)
+        shell: bash
+        run: |
+          cat > /tmp/patch-manifest.mjs <<'SCRIPT'
+          import fs from "node:fs";
+          const path = "android/app/src/main/AndroidManifest.xml";
+          let xml = fs.readFileSync(path, "utf8");
+          if (!xml.includes("POST_NOTIFICATIONS")) {
+            xml = xml.replace(
+              "<application",
+              '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n\n    <application',
+            );
+            fs.writeFileSync(path, xml);
+          }
+          SCRIPT
+          node /tmp/patch-manifest.mjs
+          grep -n "POST_NOTIFICATIONS" android/app/src/main/AndroidManifest.xml
+
+      - name: Set release versionCode / versionName
+        shell: bash
+        run: |
+          sed -i "s/versionCode [0-9]\+/versionCode ${VERSION_CODE}/" android/app/build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"${VERSION_NAME}\"/" android/app/build.gradle
+          grep -E "versionCode|versionName" android/app/build.gradle
+
+      - name: Configure release signing
+        shell: bash
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore.jks
+          cat > /tmp/patch-signing.mjs <<'SCRIPT'
+          import fs from "node:fs";
+          const path = "android/app/build.gradle";
+          let gradle = fs.readFileSync(path, "utf8");
+          const signingConfigs = `    signingConfigs {
+              release {
+                  storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                  storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                  keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                  keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+              }
+          }
+          `;
+          gradle = gradle.replace(/^android\s*\{/m, (m) => `${m}\n${signingConfigs}`);
+          gradle = gradle.replace(
+            /buildTypes\s*\{\s*release\s*\{/,
+            (m) => `${m}\n            signingConfig signingConfigs.release`,
+          );
+          fs.writeFileSync(path, gradle);
+          SCRIPT
+          node /tmp/patch-signing.mjs
+          grep -n "signingConfig" android/app/build.gradle
+
+      - name: Generate Android branding
+        shell: bash
+        run: |
+          mkdir -p resources
+          cp public/mpsclogo.jpeg resources/icon.png
+          cp public/mpsclogo.jpeg resources/splash.png
+          npx capacitor-assets generate --android \
+            --iconBackgroundColor "#eaf0f7" \
+            --splashBackgroundColor "#eaf0f7"
+
+      - name: Align Kotlin dependencies
+        shell: bash
+        run: |
+          cat >> android/build.gradle <<'EOF'
+
+          // Capacitor plugins may request legacy split Kotlin stdlib artifacts.
+          subprojects {
+            configurations.configureEach {
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+            }
+            configurations.configureEach {
+              resolutionStrategy.eachDependency { dependency ->
+                if (dependency.requested.group == 'org.jetbrains.kotlin') {
+                  dependency.useVersion '1.8.22'
+                }
+              }
+            }
+          }
+          EOF
+
+      - name: Pin androidx.browser to the project's compileSdk
+        shell: bash
+        run: sed -i "/^ext[[:space:]]*{/a\\    androidxBrowserVersion = '1.8.0'" android/variables.gradle
+
+      - name: Sync Android project
+        run: npx cap sync android
+
+      - name: Configure Gradle network resilience
+        shell: bash
+        run: |
+          cat >> android/gradle.properties <<'EOF'
+          org.gradle.internal.repository.max.retries=10
+          org.gradle.internal.repository.initial.backoff=1000
+          EOF
+
+      - name: Build signed release AAB
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/app/release.keystore.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          GRADLE_RESILIENCE_ARGS="-Dorg.gradle.internal.repository.max.retries=10 -Dorg.gradle.internal.repository.initial.backoff=1000"
+          for attempt in 1 2 3; do
+            if ./gradlew bundleRelease --no-daemon $GRADLE_RESILIENCE_ARGS; then
+              exit 0
+            fi
+            echo "Gradle build failed (attempt $attempt/3) — likely a transient Maven Central rate limit. Retrying..."
+            sleep $((attempt * 45))
+          done
+          echo "Gradle build failed after 3 attempts."
+          exit 1
+
+      - name: Remove keystore from the runner
+        if: always()
+        run: rm -f android/app/release.keystore.jks
+
+      - name: Upload signed AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpsc-pulse-release-${{ inputs.version_code }}.aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

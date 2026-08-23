@@ -5,11 +5,11 @@
    ============================================================ */
 
 export const POLICY = {
-  termsVersion: "1.2.0",
-  privacyVersion: "1.1.0",
+  termsVersion: "1.3.0",
+  privacyVersion: "1.3.0",
   refundVersion: "1.0.0",
   copyrightVersion: "1.0.0",
-  updatedAt: "2026-01-15",
+  updatedAt: "2026-08-23",
 };
 
 /** XP awarded per verified activity (backend-only source of truth). */

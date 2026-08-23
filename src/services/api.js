@@ -133,4 +133,7 @@ export const adminService = {
     api.get(`/admin/courses/${courseId}/content`).then((r) => r.data),
   saveCourseContent: (courseId, payload) =>
     api.put(`/admin/courses/${courseId}/content`, payload).then((r) => r.data),
+  getAppUpdatePolicy: () => api.get("/admin/app-update").then((r) => r.data),
+  saveAppUpdatePolicy: (payload) =>
+    api.patch("/admin/app-update", payload).then((r) => r.data),
 };

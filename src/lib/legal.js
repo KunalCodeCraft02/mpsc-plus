@@ -68,7 +68,7 @@ export const LEGAL_CONTENT = {
         {
           heading: "7. Ending access",
           body: [
-            "You may delete your account at any time from Settings. Deletion removes your profile, progress and XP.",
+            "You may request account deletion at any time from Settings. Once processed by our support team, this removes your profile, progress and XP.",
             "We may suspend or end access if these terms are broken.",
           ],
         },
@@ -132,7 +132,7 @@ export const LEGAL_CONTENT = {
         {
           heading: "७. प्रवेश समाप्ती",
           body: [
-            "सेटिंग्जमधून तुम्ही कधीही खाते हटवू शकता. यामुळे प्रोफाइल, प्रगती व XP काढले जातात.",
+            "सेटिंग्जमधून तुम्ही कधीही खाते हटवण्याची विनंती करू शकता. आमच्या सपोर्ट टीमने विनंती प्रक्रिया केल्यावर प्रोफाइल, प्रगती व XP काढले जातात.",
             "अटींचा भंग झाल्यास आम्ही प्रवेश निलंबित करू शकतो.",
           ],
         },
@@ -173,10 +173,13 @@ export const LEGAL_CONTENT = {
           ],
         },
         {
-          heading: "4. Video and third-party services",
+          heading: "4. Payments and third-party services",
           body: [
             "Lectures are hosted on YouTube as unlisted videos and embedded in the app. When a player loads, YouTube may set cookies and receive technical data under its own privacy policy.",
-            "We do not use Firebase, Zoom SDK, Agora or third-party video streaming infrastructure.",
+            "Paid courses are processed by Razorpay, our payment gateway. We send Razorpay only the course, the amount and an internal order reference — never your card, UPI PIN or banking credentials, which you enter directly with Razorpay and which never reach our servers.",
+            "We use Brevo, a transactional email provider, to deliver your OTP verification code and password-reset emails. Brevo receives your email address and name for this purpose only.",
+            "On the Android app, we use Firebase Cloud Messaging (a Google service) solely to notify your device when a new app version is available. This involves your device's messaging token being processed by Google under its own privacy policy.",
+            "We do not use Zoom SDK, Agora or third-party video streaming infrastructure. Firebase is not used for analytics or any purpose beyond app-update notifications.",
           ],
         },
         {
@@ -190,20 +193,26 @@ export const LEGAL_CONTENT = {
           heading: "6. Retention and deletion",
           body: [
             "We keep your data while your account is active.",
-            "You can delete your account from Settings. This removes your profile, progress, XP and badges.",
+            "You can request account deletion from Settings. Once our support team processes the request, this removes your profile, progress, XP and badges.",
           ],
         },
         {
           heading: "7. Your choices",
           body: [
-            "You can change your language and notification preferences at any time.",
-            "You can request a copy of your data or ask us to correct it by contacting support.",
+            "You can change your language preference at any time from Settings.",
+            "You can request a copy of your data, ask us to correct it, or request deletion by contacting support.",
           ],
         },
         {
           heading: "8. Changes",
           body: [
             "If we make a significant change we will raise the policy version and ask you to accept it before continuing to use the app.",
+          ],
+        },
+        {
+          heading: "9. Contact",
+          body: [
+            "For privacy questions, a copy of your data, corrections or account deletion, use the Support screen inside the app.",
           ],
         },
       ],
@@ -239,10 +248,13 @@ export const LEGAL_CONTENT = {
           ],
         },
         {
-          heading: "४. व्हिडिओ व तृतीय पक्ष सेवा",
+          heading: "४. पेमेंट व तृतीय पक्ष सेवा",
           body: [
             "व्याख्याने YouTube वर unlisted स्वरूपात होस्ट केली जातात व अ‍ॅपमध्ये एम्बेड केली जातात. प्लेअर लोड झाल्यावर YouTube स्वतःच्या धोरणानुसार कुकीज व तांत्रिक माहिती वापरू शकते.",
-            "आम्ही Firebase, Zoom SDK, Agora किंवा तृतीय पक्ष व्हिडिओ स्ट्रीमिंग यंत्रणा वापरत नाही.",
+            "सशुल्क कोर्सेसचे पेमेंट आमचे पेमेंट गेटवे Razorpay मार्फत प्रक्रिया केले जाते. आम्ही Razorpay ला फक्त कोर्स, रक्कम व अंतर्गत ऑर्डर संदर्भ पाठवतो — तुमचे कार्ड, UPI PIN किंवा बँकिंग तपशील कधीही आमच्या सर्व्हरपर्यंत पोहोचत नाहीत; ते तुम्ही थेट Razorpay कडे भरता.",
+            "OTP पडताळणी कोड व पासवर्ड-रीसेट ईमेल पाठवण्यासाठी आम्ही Brevo या ईमेल सेवेचा वापर करतो. या कारणासाठीच Brevo ला तुमचा ईमेल पत्ता व नाव मिळते.",
+            "Android अ‍ॅपमध्ये, नवीन आवृत्ती उपलब्ध असल्याची सूचना देण्यासाठी आम्ही केवळ Firebase Cloud Messaging (Google ची सेवा) वापरतो. यामध्ये तुमच्या डिव्हाइसचा मेसेजिंग टोकन Google च्या स्वतःच्या गोपनीयता धोरणानुसार हाताळला जातो.",
+            "आम्ही Zoom SDK, Agora किंवा तृतीय पक्ष व्हिडिओ स्ट्रीमिंग यंत्रणा वापरत नाही. Firebase चा वापर विश्लेषण किंवा अ‍ॅप-अपडेट सूचनांव्यतिरिक्त इतर कोणत्याही कारणासाठी केला जात नाही.",
           ],
         },
         {
@@ -256,19 +268,25 @@ export const LEGAL_CONTENT = {
           heading: "६. साठवण व हटवणे",
           body: [
             "खाते सक्रिय असेपर्यंत माहिती ठेवली जाते.",
-            "सेटिंग्जमधून खाते हटवल्यास प्रोफाइल, प्रगती, XP व बॅजेस काढले जातात.",
+            "सेटिंग्जमधून तुम्ही खाते हटवण्याची विनंती करू शकता. आमच्या सपोर्ट टीमने विनंती प्रक्रिया केल्यावर प्रोफाइल, प्रगती, XP व बॅजेस काढले जातात.",
           ],
         },
         {
           heading: "७. तुमचे पर्याय",
           body: [
-            "भाषा व सूचना प्राधान्ये कधीही बदलू शकता.",
-            "माहितीची प्रत मागणे किंवा दुरुस्ती करण्यासाठी सपोर्टशी संपर्क करा.",
+            "सेटिंग्जमधून भाषा प्राधान्य कधीही बदलू शकता.",
+            "माहितीची प्रत मागणे, दुरुस्ती करणे किंवा खाते हटवण्याची विनंती करण्यासाठी सपोर्टशी संपर्क करा.",
           ],
         },
         {
           heading: "८. बदल",
           body: ["महत्त्वाचा बदल झाल्यास आवृत्ती वाढवून पुन्हा स्वीकृती मागितली जाईल."],
+        },
+        {
+          heading: "९. संपर्क",
+          body: [
+            "गोपनीयतेसंबंधी प्रश्न, माहितीची प्रत, दुरुस्ती किंवा खाते हटवण्यासाठी अ‍ॅपमधील सपोर्ट स्क्रीन वापरा.",
+          ],
         },
       ],
     },

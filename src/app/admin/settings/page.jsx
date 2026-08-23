@@ -1,12 +1,116 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, Trophy, ShieldCheck, Languages, FileText } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Zap, Trophy, ShieldCheck, Languages, FileText, Smartphone } from "lucide-react";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { useI18n } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
-import { Card, SectionHeader, Badge, Alert, Select, Button } from "@/components/ui";
+import { useToast } from "@/context/ToastContext";
+import { Card, SectionHeader, Badge, Alert, Select, Button, Input, Textarea } from "@/components/ui";
 import { XP_RULES, LEVELS, POLICY, APP_VERSION, LANGUAGES } from "@/lib/config";
+import { adminService } from "@/services/api";
+
+function AppUpdateCard() {
+  const toast = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [minRequiredVersionCode, setMinRequiredVersionCode] = useState(1);
+  const [latestVersionCode, setLatestVersionCode] = useState(1);
+  const [latestVersionName, setLatestVersionName] = useState("1.0.0");
+  const [notesText, setNotesText] = useState("");
+  const [updatedAt, setUpdatedAt] = useState(null);
+
+  useEffect(() => {
+    adminService
+      .getAppUpdatePolicy()
+      .then((policy) => {
+        setMinRequiredVersionCode(policy.minRequiredVersionCode);
+        setLatestVersionCode(policy.latestVersionCode);
+        setLatestVersionName(policy.latestVersionName);
+        setNotesText((policy.releaseNotes || []).join("\n"));
+        setUpdatedAt(policy.updatedAt);
+      })
+      .catch(() => toast.error("Could not load the Android update policy."))
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const policy = await adminService.saveAppUpdatePolicy({
+        minRequiredVersionCode: Number(minRequiredVersionCode),
+        latestVersionCode: Number(latestVersionCode),
+        latestVersionName,
+        releaseNotes: notesText.split("\n").map((n) => n.trim()).filter(Boolean),
+      });
+      setUpdatedAt(policy.updatedAt);
+      toast.success("Update policy saved. Android devices were notified.");
+    } catch (e) {
+      toast.error(e.message || "Could not save the update policy.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card>
+      <SectionHeader
+        title="Android app update"
+        subtitle="Devices below the minimum version are blocked until they update via Google Play"
+        icon={Smartphone}
+      />
+      {loading ? (
+        <p className="text-[13px] text-muted">Loading…</p>
+      ) : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Latest versionCode"
+              type="number"
+              min={1}
+              value={latestVersionCode}
+              onChange={(e) => setLatestVersionCode(e.target.value)}
+            />
+            <Input
+              label="Latest versionName"
+              placeholder="1.2.0"
+              value={latestVersionName}
+              onChange={(e) => setLatestVersionName(e.target.value)}
+            />
+          </div>
+          <Input
+            label="Minimum required versionCode"
+            type="number"
+            min={1}
+            hint="Devices with an installed versionCode below this are shown the mandatory update page. Set equal to the latest versionCode to force everyone; leave lower to make this release optional."
+            value={minRequiredVersionCode}
+            onChange={(e) => setMinRequiredVersionCode(e.target.value)}
+          />
+          <Textarea
+            label="What's new (one line per bullet)"
+            rows={4}
+            value={notesText}
+            onChange={(e) => setNotesText(e.target.value)}
+          />
+          {updatedAt ? (
+            <p className="text-[12px] text-muted">Last published: {new Date(updatedAt).toLocaleString()}</p>
+          ) : null}
+          <Button onClick={save} loading={saving} disabled={saving} fullWidth>
+            Save &amp; notify Android devices
+          </Button>
+          <Alert tone="info">
+            Saving broadcasts an FCM notification and updates what every device checks against
+            Google Play on next launch/foreground. This does not itself publish anything to the
+            Play Store — upload and roll out the signed AAB there first, then set the matching
+            versionCode here.
+          </Alert>
+        </div>
+      )}
+    </Card>
+  );
+}
 
 export default function AdminSettingsPage() {
   const { t, lang, setLang } = useI18n();
@@ -91,6 +195,8 @@ export default function AdminSettingsPage() {
             {t("admin.auditLog")}
           </Button>
         </Card>
+
+        <AppUpdateCard />
       </div>
     </AdminShell>
   );
