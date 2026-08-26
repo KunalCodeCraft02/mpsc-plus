@@ -73,7 +73,14 @@ export const LEGAL_CONTENT = {
           ],
         },
         {
-          heading: "8. Contact",
+          heading: "8. Service provider",
+          body: [
+            "MPSC Pulse is an educational platform for MPSC exam preparation.",
+            "Legal Name: Kunal Kailas Bodkhe — the individual who operates MPSC Pulse and is responsible for this service.",
+          ],
+        },
+        {
+          heading: "9. Contact",
           body: ["For questions about these terms, contact support through the app."],
         },
       ],
@@ -136,7 +143,14 @@ export const LEGAL_CONTENT = {
             "अटींचा भंग झाल्यास आम्ही प्रवेश निलंबित करू शकतो.",
           ],
         },
-        { heading: "८. संपर्क", body: ["या अटींबाबत प्रश्नांसाठी अ‍ॅपमधून सपोर्टशी संपर्क करा."] },
+        {
+          heading: "८. सेवा पुरवठादार",
+          body: [
+            "MPSC Pulse हे MPSC परीक्षा तयारीसाठीचे शैक्षणिक व्यासपीठ आहे.",
+            "कायदेशीर नाव: कुणाल कैलास बोडखे — MPSC Pulse चालवण्यासाठी व या सेवेसाठी जबाबदार व्यक्ती.",
+          ],
+        },
+        { heading: "९. संपर्क", body: ["या अटींबाबत प्रश्नांसाठी अ‍ॅपमधून सपोर्टशी संपर्क करा."] },
       ],
     },
   },
@@ -210,7 +224,14 @@ export const LEGAL_CONTENT = {
           ],
         },
         {
-          heading: "9. Contact",
+          heading: "9. Data controller",
+          body: [
+            "MPSC Pulse is an educational platform/brand.",
+            "Legal Name: Kunal Kailas Bodkhe — the individual who operates MPSC Pulse and is responsible for the data described in this policy.",
+          ],
+        },
+        {
+          heading: "10. Contact",
           body: [
             "For privacy questions, a copy of your data, corrections or account deletion, use the Support screen inside the app.",
           ],
@@ -283,7 +304,14 @@ export const LEGAL_CONTENT = {
           body: ["महत्त्वाचा बदल झाल्यास आवृत्ती वाढवून पुन्हा स्वीकृती मागितली जाईल."],
         },
         {
-          heading: "९. संपर्क",
+          heading: "९. डेटा नियंत्रक",
+          body: [
+            "MPSC Pulse हे शैक्षणिक व्यासपीठ/ब्रँड आहे.",
+            "कायदेशीर नाव: कुणाल कैलास बोडखे — MPSC Pulse चालवणारी व या धोरणात नमूद माहितीसाठी जबाबदार व्यक्ती.",
+          ],
+        },
+        {
+          heading: "१०. संपर्क",
           body: [
             "गोपनीयतेसंबंधी प्रश्न, माहितीची प्रत, दुरुस्ती किंवा खाते हटवण्यासाठी अ‍ॅपमधील सपोर्ट स्क्रीन वापरा.",
           ],
