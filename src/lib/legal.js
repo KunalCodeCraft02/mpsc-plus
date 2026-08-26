@@ -44,10 +44,10 @@ export const LEGAL_CONTENT = {
           ],
         },
         {
-          heading: "4. XP, streaks and leaderboards",
+          heading: "4. XP and streaks",
           body: [
-            "XP, levels, streaks, badges and leaderboard positions are engagement features. They are calculated on our servers.",
-            "Attempting to manipulate XP, streaks, ranks or test scores may result in reset of your statistics or suspension of your account.",
+            "XP, levels, streaks and badges are engagement features. They are calculated on our servers.",
+            "Attempting to manipulate XP, streaks or test scores may result in reset of your statistics or suspension of your account.",
           ],
         },
         {
@@ -73,7 +73,14 @@ export const LEGAL_CONTENT = {
           ],
         },
         {
-          heading: "8. Contact",
+          heading: "8. Service provider",
+          body: [
+            "MPSC Pulse is an educational platform for MPSC exam preparation.",
+            "Legal Name: Kunal Kailas Bodkhe — the individual who operates MPSC Pulse and is responsible for this service.",
+          ],
+        },
+        {
+          heading: "9. Contact",
           body: ["For questions about these terms, contact support through the app."],
         },
       ],
@@ -108,10 +115,10 @@ export const LEGAL_CONTENT = {
           ],
         },
         {
-          heading: "४. XP, मालिका व क्रमवारी",
+          heading: "४. XP व मालिका",
           body: [
-            "XP, स्तर, मालिका, बॅजेस व क्रमवारी ही सहभाग वैशिष्ट्ये आहेत आणि आमच्या सर्व्हरवर मोजली जातात.",
-            "XP, मालिका, क्रमांक किंवा गुणांमध्ये फेरफार करण्याचा प्रयत्न केल्यास आकडेवारी पुन्हा शून्य केली जाऊ शकते किंवा खाते निलंबित होऊ शकते.",
+            "XP, स्तर, मालिका व बॅजेस ही सहभाग वैशिष्ट्ये आहेत आणि आमच्या सर्व्हरवर मोजली जातात.",
+            "XP, मालिका किंवा गुणांमध्ये फेरफार करण्याचा प्रयत्न केल्यास आकडेवारी पुन्हा शून्य केली जाऊ शकते किंवा खाते निलंबित होऊ शकते.",
           ],
         },
         {
@@ -136,7 +143,14 @@ export const LEGAL_CONTENT = {
             "अटींचा भंग झाल्यास आम्ही प्रवेश निलंबित करू शकतो.",
           ],
         },
-        { heading: "८. संपर्क", body: ["या अटींबाबत प्रश्नांसाठी अ‍ॅपमधून सपोर्टशी संपर्क करा."] },
+        {
+          heading: "८. सेवा पुरवठादार",
+          body: [
+            "MPSC Pulse हे MPSC परीक्षा तयारीसाठीचे शैक्षणिक व्यासपीठ आहे.",
+            "कायदेशीर नाव: कुणाल कैलास बोडखे — MPSC Pulse चालवण्यासाठी व या सेवेसाठी जबाबदार व्यक्ती.",
+          ],
+        },
+        { heading: "९. संपर्क", body: ["या अटींबाबत प्रश्नांसाठी अ‍ॅपमधून सपोर्टशी संपर्क करा."] },
       ],
     },
   },
@@ -167,7 +181,7 @@ export const LEGAL_CONTENT = {
           heading: "3. Why we use your data",
           body: [
             "To create and secure your account and verify who you are.",
-            "To show your progress, dashboard, analytics, XP, streaks and leaderboard position.",
+            "To show your progress, dashboard, analytics, XP and streaks.",
             "To send you product notifications such as new lectures, new tests and announcements.",
             "To improve course quality using aggregated statistics such as average test scores and hardest questions.",
           ],
@@ -186,7 +200,7 @@ export const LEGAL_CONTENT = {
           heading: "5. Who can see your data",
           body: [
             "Platform administrators can see your name, email, mobile, enrolments, progress, XP and account status in order to run the platform. They cannot see your password.",
-            "Other students can only see your name, avatar, level and XP on leaderboards.",
+            "Other students cannot see your progress, XP, streaks or account details — these are private to your account.",
           ],
         },
         {
@@ -210,7 +224,14 @@ export const LEGAL_CONTENT = {
           ],
         },
         {
-          heading: "9. Contact",
+          heading: "9. Data controller",
+          body: [
+            "MPSC Pulse is an educational platform/brand.",
+            "Legal Name: Kunal Kailas Bodkhe — the individual who operates MPSC Pulse and is responsible for the data described in this policy.",
+          ],
+        },
+        {
+          heading: "10. Contact",
           body: [
             "For privacy questions, a copy of your data, corrections or account deletion, use the Support screen inside the app.",
           ],
@@ -242,7 +263,7 @@ export const LEGAL_CONTENT = {
           heading: "३. माहितीचा वापर",
           body: [
             "खाते तयार करणे, सुरक्षित ठेवणे व ओळख पडताळणे.",
-            "प्रगती, डॅशबोर्ड, विश्लेषण, XP, मालिका व क्रमवारी दाखवणे.",
+            "प्रगती, डॅशबोर्ड, विश्लेषण, XP व मालिका दाखवणे.",
             "नवीन व्याख्याने, चाचण्या व घोषणा यांच्या सूचना पाठवणे.",
             "सरासरी गुण व कठीण प्रश्न यांसारख्या एकत्रित आकडेवारीने सामग्रीची गुणवत्ता सुधारणे.",
           ],
@@ -261,7 +282,7 @@ export const LEGAL_CONTENT = {
           heading: "५. माहिती कोण पाहू शकतो",
           body: [
             "व्यासपीठ चालवण्यासाठी प्रशासक तुमचे नाव, ईमेल, मोबाइल, प्रवेश, प्रगती, XP व खाते स्थिती पाहू शकतात. पासवर्ड पाहू शकत नाहीत.",
-            "इतर विद्यार्थी केवळ क्रमवारीत तुमचे नाव, अवतार, स्तर व XP पाहू शकतात.",
+            "इतर विद्यार्थी तुमची प्रगती, XP, मालिका किंवा खाते तपशील पाहू शकत नाहीत — ही माहिती फक्त तुमच्या खात्यापुरती खासगी असते.",
           ],
         },
         {
@@ -283,7 +304,14 @@ export const LEGAL_CONTENT = {
           body: ["महत्त्वाचा बदल झाल्यास आवृत्ती वाढवून पुन्हा स्वीकृती मागितली जाईल."],
         },
         {
-          heading: "९. संपर्क",
+          heading: "९. डेटा नियंत्रक",
+          body: [
+            "MPSC Pulse हे शैक्षणिक व्यासपीठ/ब्रँड आहे.",
+            "कायदेशीर नाव: कुणाल कैलास बोडखे — MPSC Pulse चालवणारी व या धोरणात नमूद माहितीसाठी जबाबदार व्यक्ती.",
+          ],
+        },
+        {
+          heading: "१०. संपर्क",
           body: [
             "गोपनीयतेसंबंधी प्रश्न, माहितीची प्रत, दुरुस्ती किंवा खाते हटवण्यासाठी अ‍ॅपमधील सपोर्ट स्क्रीन वापरा.",
           ],

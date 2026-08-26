@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Flame,
   Zap,
-  Trophy,
   PlayCircle,
   ClipboardCheck,
   GraduationCap,
@@ -75,7 +74,7 @@ export default function HomePage() {
           </RingProgress>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2.5">
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
           <div className="rounded-2xl bg-white/12 p-2.5 text-center">
             <Flame className="mx-auto h-4 w-4 text-accent-300" />
             <p className="mt-1 text-lg font-bold leading-none">{user?.streakCurrent || 0}</p>
@@ -86,17 +85,12 @@ export default function HomePage() {
             <p className="mt-1 text-lg font-bold leading-none">{user?.xp || 0}</p>
             <p className="text-[9.5px] font-bold uppercase tracking-wide text-white/60">{t("home.xp")}</p>
           </div>
-          <Link href="/leaderboard" className="rounded-2xl bg-white/12 p-2.5 text-center transition hover:bg-white/20">
-            <Trophy className="mx-auto h-4 w-4 text-teal-300" />
-            <p className="mt-1 text-lg font-bold leading-none">#{data?.profile?.rank ?? "—"}</p>
-            <p className="text-[9.5px] font-bold uppercase tracking-wide text-white/60">{t("home.rank")}</p>
-          </Link>
         </div>
 
         {level.nextAt ? (
           <div className="mt-3.5">
             <div className="flex items-center justify-between text-[11px] text-white/70">
-              <span>{t("leaderboard.toNextRank")}</span>
+              <span>{t("home.toNextLevel")}</span>
               <span className="font-bold">{level.toNext} XP</span>
             </div>
             <ProgressBar value={level.progress} size="sm" className="mt-1.5" barClassName="bg-accent-400" />
@@ -110,12 +104,11 @@ export default function HomePage() {
 
       {/* Quick actions */}
       <section className="mt-5">
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <div className="grid grid-cols-3 gap-2.5">
           {[
             { href: "/courses", icon: GraduationCap, label: t("nav.courses"), tone: "bg-brand-50 text-brand-600" },
             { href: "/tests", icon: ClipboardCheck, label: t("nav.tests"), tone: "bg-teal-50 text-teal-600" },
             { href: "/materials", icon: FileText, label: t("nav.downloads"), tone: "bg-accent-50 text-accent-600" },
-            { href: "/leaderboard", icon: Trophy, label: t("nav.leaderboard"), tone: "bg-amber-50 text-amber-600" },
           ].map((a) => {
             const Icon = a.icon;
             return (

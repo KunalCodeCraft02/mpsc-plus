@@ -42,6 +42,14 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Check required secrets are present
+        run: |
+          if [ -z "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" ]; then
+            echo "Missing required repository secret: GOOGLE_SERVICES_JSON_BASE64"
+            echo "Add it under Settings > Secrets and variables > Actions before running this workflow."
+            exit 1
+          fi
+
       - name: Validate deployed app URL
         run: |
           if [ -z "$APP_URL" ]; then
@@ -117,6 +125,41 @@ jobs:
           }
           EOF
           sed -i '/^[[:space:]]*dependencies[[:space:]]*{/a\    implementation "com.razorpay:checkout:1.6.41"' android/app/build.gradle
+
+      - name: Add google-services.json
+        # Without this, Firebase never initializes in the built APK and
+        # PushNotifications.register() (called on every app startup from
+        # AppUpdateContext.jsx) throws "Default FirebaseApp is not
+        # initialized" natively on Capacitor's bridge thread — which crashes
+        # the app immediately on launch on at least some OEM ROMs. Decoded
+        # straight from the same secret android-release.yml already uses;
+        # never committed.
+        shell: bash
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android/app/google-services.json
+
+      # No separate "apply the Google Services plugin" step is needed: the
+      # Capacitor Android template already declares the
+      # com.google.gms:google-services classpath in the top-level
+      # android/build.gradle, and app/build.gradle already conditionally
+      # applies the plugin whenever google-services.json is present.
+
+      - name: Add POST_NOTIFICATIONS permission (Android 13+)
+        shell: bash
+        run: |
+          cat > /tmp/patch-manifest.mjs <<'SCRIPT'
+          import fs from "node:fs";
+          const path = "android/app/src/main/AndroidManifest.xml";
+          let xml = fs.readFileSync(path, "utf8");
+          if (!xml.includes("POST_NOTIFICATIONS")) {
+            xml = xml.replace(
+              "<application",
+              '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n\n    <application',
+            );
+            fs.writeFileSync(path, xml);
+          }
+          SCRIPT
+          node /tmp/patch-manifest.mjs
+          grep -n "POST_NOTIFICATIONS" android/app/src/main/AndroidManifest.xml
 
       - name: Generate Android branding
         shell: bash

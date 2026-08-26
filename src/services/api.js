@@ -102,10 +102,6 @@ export const searchService = {
   suggest: (q) => api.get("/search/suggest", { params: { q } }).then((r) => r.data),
 };
 
-export const leaderboardService = {
-  list: (params) => api.get("/leaderboard", { params }).then((r) => r.data),
-};
-
 export const notificationService = {
   list: () => api.get("/notifications").then((r) => r.data),
 };

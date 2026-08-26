@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
-  Trophy,
   XCircle,
   CheckCircle2,
   MinusCircle,
@@ -152,9 +151,6 @@ export default function ResultPage() {
             </Button>
             <Button as={Link} href={`/tests/${quiz?.id}`} size="sm">
               {t("tests.retake")}
-            </Button>
-            <Button as={Link} href="/leaderboard" variant="secondary" size="sm" leftIcon={Trophy}>
-              {t("leaderboard.title")}
             </Button>
           </div>
         </Card>

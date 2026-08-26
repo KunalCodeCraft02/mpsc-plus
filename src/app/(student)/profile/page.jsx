@@ -8,7 +8,6 @@ import {
   Globe,
   Flame,
   Zap,
-  Trophy,
   GraduationCap,
   PlayCircle,
   ClipboardCheck,
@@ -46,7 +45,6 @@ const BADGE_ICONS = {
   perfect_score: Sparkles,
   bookworm: BookOpen,
   course_completed: GraduationCap,
-  top_learner: Trophy,
 };
 
 export default function ProfilePage() {
@@ -94,7 +92,7 @@ export default function ProfilePage() {
           </RingProgress>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2.5">
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
           <div className="rounded-2xl bg-white/12 p-2.5 text-center">
             <Zap className="mx-auto h-4 w-4 text-amber-300" />
             <p className="mt-1 text-lg font-bold leading-none">{user?.xp || 0}</p>
@@ -105,11 +103,6 @@ export default function ProfilePage() {
             <p className="mt-1 text-lg font-bold leading-none">{user?.streakCurrent || 0}</p>
             <p className="text-[9.5px] font-bold uppercase tracking-wide text-white/60">{t("profile.currentStreak")}</p>
           </div>
-          <Link href="/leaderboard" className="rounded-2xl bg-white/12 p-2.5 text-center transition hover:bg-white/20">
-            <Trophy className="mx-auto h-4 w-4 text-teal-300" />
-            <p className="mt-1 text-lg font-bold leading-none">#{user?.rank ?? "—"}</p>
-            <p className="text-[9.5px] font-bold uppercase tracking-wide text-white/60">{t("home.rank")}</p>
-          </Link>
         </div>
 
         <div className="mt-3.5 flex items-center justify-between text-[11.5px] text-white/65">

@@ -11,8 +11,6 @@ import {
   Activity,
   TrendingUp,
   Plus,
-  Flame,
-  Trophy,
   History,
 } from "lucide-react";
 import { AdminShell } from "@/components/layout/AdminShell";
@@ -234,41 +232,21 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card>
-              <SectionHeader title="Top students" icon={Trophy} action={<Link href="/admin/leaderboard" className="text-[12px] font-bold text-brand-600 hover:underline">{t("common.viewAll")}</Link>} />
-              <div className="divide-y divide-slate-50">
-                {data.topStudents.map((s, i) => (
-                  <div key={s.id} className="flex items-center gap-3 py-2.5">
-                    <span className="w-6 text-center text-[13px] font-bold text-muted">{i + 1}</span>
-                    <Avatar name={s.name} size="sm" />
-                    <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-ink">{s.name}</p>
-                    <span className="inline-flex items-center gap-1 text-[11.5px] font-bold text-amber-600">
-                      <Flame className="h-3.5 w-3.5" />
-                      {s.streakCurrent}
-                    </span>
-                    <span className="text-[12px] font-bold text-brand-700">{s.xp}</span>
+          <Card>
+            <SectionHeader title={t("admin.auditLog")} icon={History} action={<Link href="/admin/audit" className="text-[12px] font-bold text-brand-600 hover:underline">{t("common.viewAll")}</Link>} />
+            <div className="divide-y divide-slate-50">
+              {data.audit.map((a) => (
+                <div key={a.id} className="py-2.5">
+                  <div className="flex items-center gap-2">
+                    <Badge tone="outline" size="sm">{a.action}</Badge>
+                    <span className="truncate text-[12.5px] font-semibold text-ink">{a.adminName}</span>
+                    <span className="ml-auto shrink-0 text-[11px] text-muted">{formatDate(a.createdAt)}</span>
                   </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card>
-              <SectionHeader title={t("admin.auditLog")} icon={History} action={<Link href="/admin/audit" className="text-[12px] font-bold text-brand-600 hover:underline">{t("common.viewAll")}</Link>} />
-              <div className="divide-y divide-slate-50">
-                {data.audit.map((a) => (
-                  <div key={a.id} className="py-2.5">
-                    <div className="flex items-center gap-2">
-                      <Badge tone="outline" size="sm">{a.action}</Badge>
-                      <span className="truncate text-[12.5px] font-semibold text-ink">{a.adminName}</span>
-                      <span className="ml-auto shrink-0 text-[11px] text-muted">{formatDate(a.createdAt)}</span>
-                    </div>
-                    <p className="mt-1 truncate text-[11.5px] text-muted">{a.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
+                  <p className="mt-1 truncate text-[11.5px] text-muted">{a.detail}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
       )}
     </AdminShell>
