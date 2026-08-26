@@ -274,7 +274,10 @@ jobs:
           org.gradle.internal.repository.initial.backoff=1000
           EOF
 
-      - name: Build signed release AAB
+      - name: Build signed release AAB and APK
+        # bundleRelease is the Play Console upload artifact; assembleRelease
+        # (same signingConfig, same versionCode/versionName) is built
+        # alongside it purely for local/device sideload testing.
         working-directory: android
         env:
           ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/app/release.keystore.jks
@@ -284,7 +287,7 @@ jobs:
         run: |
           GRADLE_RESILIENCE_ARGS="-Dorg.gradle.internal.repository.max.retries=10 -Dorg.gradle.internal.repository.initial.backoff=1000"
           for attempt in 1 2 3; do
-            if ./gradlew bundleRelease --no-daemon $GRADLE_RESILIENCE_ARGS; then
+            if ./gradlew bundleRelease assembleRelease --no-daemon $GRADLE_RESILIENCE_ARGS; then
               exit 0
             fi
             echo "Gradle build failed (attempt $attempt/3) — likely a transient Maven Central rate limit. Retrying..."
@@ -302,4 +305,11 @@ jobs:
         with:
           name: mpsc-pulse-release-${{ inputs.version_code }}.aab
           path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpsc-pulse-release-${{ inputs.version_code }}.apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
