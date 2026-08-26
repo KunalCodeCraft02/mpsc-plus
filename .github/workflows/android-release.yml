@@ -266,6 +266,20 @@ jobs:
       - name: Sync Android project
         run: npx cap sync android
 
+      - name: TEMP DEBUG - dump gradle SDK config
+        shell: bash
+        run: |
+          echo "--- variables.gradle ---"
+          cat android/variables.gradle
+          echo "--- app/build.gradle ---"
+          cat android/app/build.gradle
+          echo "--- installed @capacitor/android version ---"
+          cat node_modules/@capacitor/android/package.json | grep '"version"'
+          echo "--- installed @capacitor/core version ---"
+          cat node_modules/@capacitor/core/package.json | grep '"version"'
+          echo "--- capacitor.android.json plugin manifest (if any) ---"
+          find node_modules -maxdepth 3 -iname "capacitor.config.json" 2>/dev/null | head -5
+
       - name: Configure Gradle network resilience
         shell: bash
         run: |
