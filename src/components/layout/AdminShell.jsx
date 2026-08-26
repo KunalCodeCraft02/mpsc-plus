@@ -12,7 +12,6 @@ import {
   FileText,
   ClipboardList,
   Users,
-  Trophy,
   BarChart3,
   Bell,
   Settings,
@@ -39,7 +38,6 @@ const NAV = [
   { key: "pdfs", href: "/admin/pdfs", icon: FileText },
   { key: "quizzes", href: "/admin/quizzes", icon: ClipboardList },
   { key: "students", href: "/admin/students", icon: Users },
-  { key: "leaderboard", href: "/admin/leaderboard", icon: Trophy },
   { key: "analytics", href: "/admin/analytics", icon: BarChart3 },
   { key: "notifications", href: "/admin/notifications", icon: Bell },
   { key: "settings", href: "/admin/settings", icon: Settings },
@@ -48,7 +46,7 @@ const NAV = [
 const GROUPS = [
   { label: "Overview", keys: ["dashboard"] },
   { label: "Content", keys: ["courses", "subjects", "chapters", "lectures", "pdfs", "quizzes"] },
-  { label: "Community", keys: ["students", "leaderboard"] },
+  { label: "Community", keys: ["students"] },
   { label: "Insights", keys: ["analytics", "notifications", "settings"] },
 ];
 

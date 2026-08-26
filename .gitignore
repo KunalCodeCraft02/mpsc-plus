@@ -9,3 +9,5 @@ google-services.json
 *.keystore
 /android
 /www
+.vercel
+.env*

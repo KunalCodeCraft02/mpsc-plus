@@ -1,7 +1,7 @@
 {
   "name": "MPSC Pulse — Pulse of MPSC",
   "short_name": "MPSC Pulse",
-  "description": "Your complete MPSC preparation platform: recorded lectures, PDF notes, tests with analysis, XP and leaderboards.",
+  "description": "Your complete MPSC preparation platform: recorded lectures, PDF notes, tests with analysis, XP and streaks.",
   "start_url": "/home",
   "scope": "/",
   "display": "standalone",

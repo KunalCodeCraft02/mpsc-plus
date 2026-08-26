@@ -24,7 +24,7 @@ const devanagari = Noto_Sans_Devanagari({
 export const metadata = {
   title: "MPSC Pulse — Pulse of MPSC",
   description:
-    "Your complete MPSC preparation platform: recorded lectures, PDF notes, tests with analysis, XP and leaderboards — in Marathi and English.",
+    "Your complete MPSC preparation platform: recorded lectures, PDF notes, tests with analysis, XP and streaks — in Marathi and English.",
   applicationName: "MPSC Pulse",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

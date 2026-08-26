@@ -7,7 +7,6 @@ import {
   Home,
   BookMarked,
   ClipboardCheck,
-  Trophy,
   User,
   Search,
   Bell,
@@ -30,7 +29,6 @@ const TABS = [
   { key: "home", href: "/home", icon: Home },
   { key: "myLearning", href: "/my-learning", icon: BookMarked },
   { key: "tests", href: "/tests", icon: ClipboardCheck },
-  { key: "leaderboard", href: "/leaderboard", icon: Trophy },
   { key: "profile", href: "/profile", icon: User },
 ];
 
@@ -40,7 +38,6 @@ const SIDE_LINKS = [
   { key: "myLearning", href: "/my-learning", icon: BookMarked },
   { key: "tests", href: "/tests", icon: ClipboardCheck },
   { key: "downloads", href: "/materials", icon: FileText },
-  { key: "leaderboard", href: "/leaderboard", icon: Trophy },
   { key: "profile", href: "/profile", icon: User },
   { key: "support", href: "/support", icon: FileText },
   { key: "settings", href: "/settings", icon: Settings },

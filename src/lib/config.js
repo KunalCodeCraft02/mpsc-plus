@@ -63,7 +63,6 @@ export const BADGES = [
   { code: "perfect_score", icon: "Sparkles", tone: "amber" },
   { code: "bookworm", icon: "BookOpen", tone: "brand" },
   { code: "course_completed", icon: "GraduationCap", tone: "teal" },
-  { code: "top_learner", icon: "Trophy", tone: "amber" },
 ];
 
 export const CATEGORIES = [
@@ -103,7 +102,6 @@ export const ADMIN_NAV = [
   { key: "pdfs", href: "/admin/pdfs", icon: "FileText" },
   { key: "quizzes", href: "/admin/quizzes", icon: "ClipboardList" },
   { key: "students", href: "/admin/students", icon: "Users" },
-  { key: "leaderboard", href: "/admin/leaderboard", icon: "Trophy" },
   { key: "analytics", href: "/admin/analytics", icon: "BarChart3" },
   { key: "notifications", href: "/admin/notifications", icon: "Bell" },
   { key: "settings", href: "/admin/settings", icon: "Settings" },
@@ -113,6 +111,5 @@ export const STUDENT_TABS = [
   { key: "home", href: "/home", icon: "Home" },
   { key: "myLearning", href: "/my-learning", icon: "BookMarked" },
   { key: "tests", href: "/tests", icon: "ClipboardCheck" },
-  { key: "leaderboard", href: "/leaderboard", icon: "Trophy" },
   { key: "profile", href: "/profile", icon: "User" },
 ];

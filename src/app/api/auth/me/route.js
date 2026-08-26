@@ -9,7 +9,6 @@ import {
 } from "@/db";
 import { handler, body, ok } from "@/server/http";
 import { requireAuth, publicUser } from "@/server/auth";
-import { userRank } from "@/server/gamification";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +23,6 @@ export const GET = handler(async (request) => {
     attemptAgg,
     coursesEnrolled,
     coursesCompleted,
-    rank,
   ] = await Promise.all([
     UserBadge.find({ userId: user.id }, { code: 1, earnedAt: 1, _id: 0 }).lean(),
     LectureProgress.countDocuments({ userId: user.id }),
@@ -35,13 +33,11 @@ export const GET = handler(async (request) => {
     ]),
     Enrollment.countDocuments({ userId: user.id }),
     Enrollment.countDocuments({ userId: user.id, progressPercent: { $gte: 100 } }),
-    user.role === "STUDENT" ? userRank(user.id) : Promise.resolve(null),
   ]);
 
   return ok({
     user: {
       ...publicUser(user),
-      rank,
       badges: badges.map((b) => b.code),
       stats: {
         lecturesCompleted,

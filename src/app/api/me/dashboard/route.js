@@ -14,7 +14,6 @@ import {
 } from "@/db";
 import { handler, ok } from "@/server/http";
 import { requireAuth } from "@/server/auth";
-import { userRank } from "@/server/gamification";
 import { levelFor } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
@@ -132,7 +131,7 @@ export const GET = handler(async (request) => {
   /* Last 7 days of activity (replaces the generate_series CTE) */
   const since = new Date(Date.now() - 6 * DAY_MS);
   since.setUTCHours(0, 0, 0, 0);
-  const [lectureDays, quizDays, xpDays, badgeRows, attemptAgg, rank, notif] =
+  const [lectureDays, quizDays, xpDays, badgeRows, attemptAgg, notif] =
     await Promise.all([
       LectureProgress.aggregate([
         { $match: { userId: user.id, completed: true, completedAt: { $gte: since } } },
@@ -166,7 +165,6 @@ export const GET = handler(async (request) => {
         { $match: { userId: user.id } },
         { $group: { _id: null, attempts: { $sum: 1 }, avg: { $avg: "$percent" } } },
       ]),
-      userRank(user.id),
       Notification.find().sort({ createdAt: -1, _id: -1 }).limit(3).lean(),
     ]);
 
@@ -194,7 +192,6 @@ export const GET = handler(async (request) => {
       xp: user.xp,
       streakCurrent: user.streakCurrent,
       streakLongest: user.streakLongest,
-      rank,
       level,
       badges: badgeRows.map((b) => b.code),
     },

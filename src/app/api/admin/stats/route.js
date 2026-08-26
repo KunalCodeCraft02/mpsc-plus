@@ -89,7 +89,6 @@ export const GET = handler(async (request) => {
     recentStudents,
     recentLectures,
     recentAttempts,
-    topStudents,
     audit,
     engagement,
     quizPerf,
@@ -178,10 +177,6 @@ export const GET = handler(async (request) => {
         },
       },
     ]),
-    User.find({ role: "STUDENT" }, { name: 1, xp: 1, streakCurrent: 1 })
-      .sort({ xp: -1 })
-      .limit(5)
-      .lean(),
     AuditLog.find().sort({ createdAt: -1, _id: -1 }).limit(6).lean(),
     Course.aggregate([
       {
@@ -242,7 +237,6 @@ export const GET = handler(async (request) => {
     recentStudents: ser(recentStudents),
     recentLectures,
     recentAttempts,
-    topStudents: ser(topStudents),
     audit: ser(audit),
   });
 });
