@@ -37,6 +37,7 @@ import {
 import { LectureCard, PDFCard, QuizCard } from "@/components/cards/ContentCards";
 import { formatDuration, formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function CourseDetailPage() {
   const { id } = useParams();
@@ -316,7 +317,7 @@ export default function CourseDetailPage() {
                 <Button
                   size="lg"
                   leftIcon={PlayCircle}
-                  onClick={() => router.push(`/lectures/${nextLecture.id}`)}
+                  onClick={() => navigateInternalUrl(`/lectures/${nextLecture.id}`, router)}
                 >
                   {progressPercent > 0 ? t("course.continueLearning") : t("course.startLearning")}
                 </Button>

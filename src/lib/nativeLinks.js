@@ -2,6 +2,15 @@
 
 import { Capacitor } from "@capacitor/core";
 
+export function navigateInternalUrl(url, router) {
+  if (!url) return;
+  if (Capacitor.isNativePlatform()) {
+    window.location.assign(url);
+    return;
+  }
+  router.push(url);
+}
+
 /**
  * Opens an external URL (PDF file, download link, etc.) safely from inside
  * the Android app shell. A plain `<a target="_blank">` has no "new tab" to

@@ -30,6 +30,7 @@ import {
 } from "@/components/ui";
 import { PDFCard } from "@/components/cards/ContentCards";
 import { cn, formatDuration } from "@/lib/utils";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function LecturePlayerPage() {
   const { id } = useParams();
@@ -185,14 +186,14 @@ export default function LecturePlayerPage() {
                 variant="outline"
                 leftIcon={ChevronLeft}
                 disabled={!prev}
-                onClick={() => prev && router.push(`/lectures/${prev.id}`)}
+                onClick={() => prev && navigateInternalUrl(`/lectures/${prev.id}`, router)}
               >
                 {t("lecture.prevLecture")}
               </Button>
               <Button
                 rightIcon={ChevronRight}
                 disabled={!next}
-                onClick={() => next && router.push(`/lectures/${next.id}`)}
+                onClick={() => next && navigateInternalUrl(`/lectures/${next.id}`, router)}
               >
                 {t("lecture.nextLecture")}
               </Button>
