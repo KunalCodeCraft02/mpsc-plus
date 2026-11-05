@@ -29,6 +29,7 @@ import {
 } from "@/components/ui";
 import { BrandLock } from "@/components/layout/Brand";
 import { cn, formatSeconds } from "@/lib/utils";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function QuizAttemptPage() {
   const { id } = useParams();
@@ -75,7 +76,7 @@ export default function QuizAttemptPage() {
         };
         const res = await learningService.submitQuiz(id, payload);
         if (auto) toast.info("Time is up — your test was submitted automatically.");
-        router.replace(`/results/${res.attemptId}`);
+        navigateInternalUrl(`/results/${res.attemptId}`, router);
       } catch (e) {
         submittedRef.current = false;
         toast.error(e.message);
@@ -120,7 +121,7 @@ export default function QuizAttemptPage() {
   if (error) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-[#f6f7fb] p-5">
-        <ErrorState title={t("common.somethingWrong")} description={error} onRetry={() => router.push("/tests")} retryLabel={t("result.backToTests")} />
+        <ErrorState title={t("common.somethingWrong")} description={error} onRetry={() => navigateInternalUrl("/tests", router)} retryLabel={t("result.backToTests")} />
       </div>
     );
   }
@@ -169,7 +170,7 @@ export default function QuizAttemptPage() {
             </Alert>
 
             <div className="mt-5 flex gap-2.5">
-              <Button variant="outline" size="lg" onClick={() => router.push("/tests")}>
+              <Button variant="outline" size="lg" onClick={() => navigateInternalUrl("/tests", router)}>
                 {t("common.back")}
               </Button>
               <Button

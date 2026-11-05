@@ -12,6 +12,7 @@ import { useQuery } from "@/hooks/useQuery";
 import { Button, Checkbox, Badge, Alert } from "@/components/ui";
 import { POLICY } from "@/lib/config";
 import { LEGAL_DOCS } from "@/lib/legal";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function TermsConsentPage() {
   const { t, lang } = useI18n();
@@ -37,10 +38,10 @@ export default function TermsConsentPage() {
           platform: "web",
         });
         markOnboarded();
-        router.replace(params.next || "/home");
+        navigateInternalUrl(params.next || "/home", router);
       } else {
         markOnboarded();
-        router.push("/register");
+        navigateInternalUrl("/register", router);
       }
     } catch (e) {
       toast.error(e.message);

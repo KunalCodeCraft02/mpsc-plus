@@ -12,6 +12,7 @@ import { useToast } from "@/context/ToastContext";
 import { useQuery } from "@/hooks/useQuery";
 import { Button, Input, PasswordInput, Alert, PageLoader } from "@/components/ui";
 import { loginSchema } from "@/server/validation";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function LoginPage() {
   const { t } = useI18n();
@@ -27,7 +28,7 @@ export default function LoginPage() {
   // an already-authenticated visitor away instead of showing the form again.
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.replace(params.next || (isAdmin ? "/admin" : "/home"));
+      navigateInternalUrl(params.next || (isAdmin ? "/admin" : "/home"), router);
     }
   }, [loading, isAuthenticated, isAdmin, router, params.next]);
 
@@ -46,7 +47,7 @@ export default function LoginPage() {
       const user = await login(values);
       toast.success(`${t("auth.loginTitle")}, ${user.name.split(" ")[0]}!`);
       const next = params.next;
-      router.replace(next || (user.role === "ADMIN" ? "/admin" : "/home"));
+      navigateInternalUrl(next || (user.role === "ADMIN" ? "/admin" : "/home"), router);
     } catch (e) {
       setServerError(e.message);
     }

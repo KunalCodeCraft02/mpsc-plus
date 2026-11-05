@@ -95,9 +95,9 @@ export default function LecturePlayerPage() {
         <ErrorState
           title={t("common.somethingWrong")}
           description={error}
-          onRetry={() => router.push("/my-learning")}
+          onRetry={() => navigateInternalUrl("/my-learning", router)}
           retryLabel={t("learning.title")}
-          onBack={() => router.push("/courses")}
+          onBack={() => navigateInternalUrl("/courses", router)}
           backLabel={t("nav.courses")}
         />
       </StudentShell>

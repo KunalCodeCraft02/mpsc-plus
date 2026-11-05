@@ -28,6 +28,7 @@ import { useI18n } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, Badge, Button } from "@/components/ui";
 import { PulseMark } from "./Brand";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 const NAV = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
@@ -137,7 +138,7 @@ export function AdminSidebar({ onNavigate, className }) {
           <button
             onClick={() => {
               logout();
-              router.push("/");
+              navigateInternalUrl("/", router);
             }}
             className="rounded-lg p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
             aria-label={t("common.logout")}

@@ -12,6 +12,7 @@ import { PulseMark } from "@/components/layout/Brand";
 import { useI18n } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function WelcomePage() {
   const { t } = useI18n();
@@ -19,7 +20,7 @@ export default function WelcomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) router.replace(isAdmin ? "/admin" : "/home");
+    if (!loading && isAuthenticated) navigateInternalUrl(isAdmin ? "/admin" : "/home", router);
   }, [loading, isAuthenticated, isAdmin, router]);
 
   // The session restore is still in flight, or a redirect to Home is about

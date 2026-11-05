@@ -10,6 +10,7 @@ import { useQuery } from "@/hooks/useQuery";
 import { Button } from "@/components/ui";
 import { LANGUAGES } from "@/lib/config";
 import { cn } from "@/lib/utils";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function LanguagePage() {
   const { t, lang, setLang } = useI18n();
@@ -25,7 +26,7 @@ export default function LanguagePage() {
     setLang(choice);
     toast.success(t("language.saved"));
     const target = mode === "login" ? "/login" : "/terms-consent";
-    router.push(next ? `${target}?next=${encodeURIComponent(next)}` : target);
+    navigateInternalUrl(next ? `${target}?next=${encodeURIComponent(next)}` : target, router);
   };
 
   return (

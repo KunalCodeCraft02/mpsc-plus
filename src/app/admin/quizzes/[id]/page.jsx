@@ -19,6 +19,7 @@ import {
 import { AdminShell } from "@/components/layout/AdminShell";
 import { useLookups } from "@/components/admin/ResourceManager";
 import { adminService } from "@/services/api";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 import { useI18n } from "@/context/I18nContext";
 import { useToast } from "@/context/ToastContext";
 import {
@@ -170,7 +171,7 @@ export default function QuizBuilderPage() {
       if (isNew) {
         const { item } = await adminService.create("quizzes", payload);
         toast.success(t("admin.created"));
-        router.replace(`/admin/quizzes/${item.id}`);
+        navigateInternalUrl(`/admin/quizzes/${item.id}`, router);
       } else {
         await adminService.update("quizzes", id, payload);
         toast.success(t("admin.saved"));

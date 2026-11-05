@@ -6,6 +6,7 @@ import { ShieldAlert } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useI18n } from "@/context/I18nContext";
 import { PageLoader, Button, EmptyState } from "@/components/ui";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export function ProtectedRoute({ children }) {
   const { isAuthenticated, loading, needsPolicyAcceptance } = useAuth();
@@ -15,11 +16,11 @@ export function ProtectedRoute({ children }) {
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) {
-      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+      navigateInternalUrl(`/login?next=${encodeURIComponent(pathname)}`, router);
       return;
     }
     if (needsPolicyAcceptance) {
-      router.replace(`/terms-consent?next=${encodeURIComponent(pathname)}`);
+      navigateInternalUrl(`/terms-consent?next=${encodeURIComponent(pathname)}`, router);
     }
   }, [loading, isAuthenticated, needsPolicyAcceptance, router, pathname]);
 
@@ -37,7 +38,7 @@ export function AdminRoute({ children }) {
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) {
-      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+      navigateInternalUrl(`/login?next=${encodeURIComponent(pathname)}`, router);
     }
   }, [loading, isAuthenticated, router, pathname]);
 
@@ -51,7 +52,7 @@ export function AdminRoute({ children }) {
           title={t("admin.unauthorized")}
           description="Only administrators can open this area. Head back to your learning dashboard."
           action={
-            <Button onClick={() => router.replace("/home")}>{t("nav.home")}</Button>
+            <Button onClick={() => navigateInternalUrl("/home", router)}>{t("nav.home")}</Button>
           }
         />
       </div>

@@ -10,6 +10,7 @@ import { useI18n } from "@/context/I18nContext";
 import { Card, Badge, Button, SectionHeader, PageLoader, ErrorState, Alert } from "@/components/ui";
 import { formatFileSize } from "@/lib/utils";
 import { openExternalUrl } from "@/lib/nativeLinks";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function PdfViewerPage() {
   const { id } = useParams();
@@ -31,7 +32,7 @@ export default function PdfViewerPage() {
         <ErrorState
           title={t("common.somethingWrong")}
           description={error}
-          onRetry={() => router.push("/materials")}
+          onRetry={() => navigateInternalUrl("/materials", router)}
           retryLabel={t("nav.downloads")}
         />
       </StudentShell>

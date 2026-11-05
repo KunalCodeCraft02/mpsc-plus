@@ -14,6 +14,7 @@ import { Button, Input, PasswordInput, Select, Checkbox, Alert, ProgressBar } fr
 import { registerSchema } from "@/server/validation";
 import { POLICY, LANGUAGES } from "@/lib/config";
 import { cn } from "@/lib/utils";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 const STEPS = [
   { key: "stepBasics", fields: ["name", "mobile", "email"] },
@@ -99,7 +100,7 @@ export default function RegisterPage() {
       setLang(pending.language);
       markOnboarded();
       toast.success(`${t("app.name")} — ${user.name.split(" ")[0]}, welcome aboard!`);
-      router.replace("/home");
+      navigateInternalUrl("/home", router);
     } catch (e) {
       setCodeError(e.message);
     } finally {

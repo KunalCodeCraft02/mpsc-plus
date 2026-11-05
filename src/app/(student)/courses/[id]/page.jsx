@@ -235,7 +235,7 @@ export default function CourseDetailPage() {
           description={error}
           onRetry={load}
           retryLabel={t("common.retry")}
-          onBack={() => router.push("/courses")}
+          onBack={() => navigateInternalUrl("/courses", router)}
           backLabel={t("nav.courses")}
         />
       </StudentShell>

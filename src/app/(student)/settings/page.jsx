@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { authService } from "@/services/api";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 import { useI18n } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
@@ -147,7 +148,7 @@ export default function SettingsPage() {
               leftIcon={LogOut}
               onClick={() => {
                 logout();
-                router.push("/");
+                navigateInternalUrl("/", router);
               }}
             >
               {t("common.logout")}

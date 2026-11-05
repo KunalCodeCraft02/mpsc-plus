@@ -12,6 +12,7 @@ import { useToast } from "@/context/ToastContext";
 import { Button, Input, PasswordInput, Alert } from "@/components/ui";
 import { forgotSchema, resetPasswordSchema } from "@/server/validation";
 import { authService } from "@/services/api";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 export default function ForgotPasswordPage() {
   const { t } = useI18n();
@@ -65,7 +66,7 @@ export default function ForgotPasswordPage() {
     try {
       await authService.resetPassword(values);
       toast.success(t("auth.resetDone"));
-      router.replace("/login");
+      navigateInternalUrl("/login", router);
     } catch (error) {
       setServerError(error.message);
     }

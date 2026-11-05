@@ -24,6 +24,7 @@ import { useI18n } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, Badge, Button } from "@/components/ui";
 import { BrandLock, PulseMark } from "./Brand";
+import { navigateInternalUrl } from "@/lib/nativeLinks";
 
 const TABS = [
   { key: "home", href: "/home", icon: Home },
@@ -160,7 +161,7 @@ export function Sidebar({ onNavigate, mobile = false }) {
           <button
             onClick={() => {
               logout();
-              router.push("/");
+              navigateInternalUrl("/", router);
             }}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-semibold text-slate-600 transition hover:bg-red-50 hover:text-red-600"
           >
@@ -211,7 +212,7 @@ export function Header({ title, showSearch = true, back = false }) {
 
           {showSearch ? (
             <button
-              onClick={() => router.push("/search")}
+              onClick={() => navigateInternalUrl("/search", router)}
               className="hidden h-10 min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-left text-[13px] text-slate-400 transition hover:border-brand-300 hover:bg-white lg:flex lg:max-w-md"
             >
               <Search className="h-4 w-4 shrink-0" />
