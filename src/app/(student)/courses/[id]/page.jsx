@@ -229,7 +229,14 @@ export default function CourseDetailPage() {
   if (error) {
     return (
       <StudentShell title={t("course.details")}>
-        <ErrorState title={t("common.somethingWrong")} description={error} onRetry={load} retryLabel={t("common.retry")} />
+        <ErrorState
+          title={t("common.somethingWrong")}
+          description={error}
+          onRetry={load}
+          retryLabel={t("common.retry")}
+          onBack={() => router.push("/courses")}
+          backLabel={t("nav.courses")}
+        />
       </StudentShell>
     );
   }

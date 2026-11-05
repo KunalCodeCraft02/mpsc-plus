@@ -144,7 +144,15 @@ export function EmptyState({
   );
 }
 
-export function ErrorState({ title, description, onRetry, retryLabel = "Try again", className }) {
+export function ErrorState({
+  title,
+  description,
+  onRetry,
+  retryLabel = "Try again",
+  onBack,
+  backLabel = "Go back",
+  className,
+}) {
   return (
     <div
       className={cn(
@@ -159,10 +167,19 @@ export function ErrorState({ title, description, onRetry, retryLabel = "Try agai
       {description ? (
         <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted">{description}</p>
       ) : null}
-      {onRetry ? (
-        <Button variant="outline" size="sm" className="mt-5" leftIcon={RefreshCw} onClick={onRetry}>
-          {retryLabel}
-        </Button>
+      {onRetry || onBack ? (
+        <div className="mt-5 flex flex-wrap justify-center gap-2">
+          {onRetry ? (
+            <Button variant="outline" size="sm" leftIcon={RefreshCw} onClick={onRetry}>
+              {retryLabel}
+            </Button>
+          ) : null}
+          {onBack ? (
+            <Button variant="ghost" size="sm" onClick={onBack}>
+              {backLabel}
+            </Button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

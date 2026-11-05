@@ -96,6 +96,8 @@ export default function LecturePlayerPage() {
           description={error}
           onRetry={() => router.push("/my-learning")}
           retryLabel={t("learning.title")}
+          onBack={() => router.push("/courses")}
+          backLabel={t("nav.courses")}
         />
       </StudentShell>
     );
