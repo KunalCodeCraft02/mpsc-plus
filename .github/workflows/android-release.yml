@@ -112,7 +112,9 @@ jobs:
         run: npm ci
 
       - name: Build Next.js application
-        run: npm run build
+        # Turbopack's next/font/google resolver is not available in the
+        # clean GitHub Actions install; use the stable production builder.
+        run: npm run build -- --webpack
 
       - name: Install Capacitor
         run: npm install --no-save -D @capacitor/cli @capacitor/android @capacitor/assets
