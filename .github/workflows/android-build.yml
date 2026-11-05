@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       app_url:
-        description: Deployed Vercel URL, for example https://mpsc-pulse.vercel.app
+        description: Deployed app URL, for example https://www.mpscpulse.in
         required: true
         type: string
 
@@ -40,7 +40,10 @@ jobs:
         # and fails outright ("No file ... matched").
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
 
       - name: Check required secrets are present
         run: |
