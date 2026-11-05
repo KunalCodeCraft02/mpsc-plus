@@ -28,6 +28,7 @@ on:
         description: Deployed app URL, for example https://www.mpscpulse.in
         required: true
         type: string
+        default: https://www.mpscpulse.in
       version_code:
         description: Integer versionCode for this build (must be higher than the last Play release)
         required: true
@@ -81,6 +82,10 @@ jobs:
           case "$APP_URL" in
             https://*) ;;
             *) echo "APP_URL must use HTTPS."; exit 1 ;;
+          esac
+          case "$APP_URL" in
+            https://www.mpscpulse.in|https://www.mpscpulse.in/) ;;
+            *) echo "APP_URL must be https://www.mpscpulse.in for production Android builds."; exit 1 ;;
           esac
           case "$VERSION_CODE" in
             ''|*[!0-9]*) echo "version_code must be a positive integer."; exit 1 ;;
