@@ -34,8 +34,11 @@ public class RazorpayNativePlugin extends Plugin {
     @PluginMethod
     public void open(PluginCall call) {
         if (pendingCall != null) {
-            call.reject("A payment is already in progress");
-            return;
+            // The SDK may drop its callback when the activity is recreated or
+            // its checkout is dismissed. Clear that stale call so the next
+            // purchase can start a fresh checkout.
+            pendingCall.reject("Previous payment session expired");
+            pendingCall = null;
         }
 
         String key = call.getString("key");

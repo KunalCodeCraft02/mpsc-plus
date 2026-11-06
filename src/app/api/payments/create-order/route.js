@@ -75,20 +75,12 @@ export const POST = handler(async (request) => {
       }
     }
 
-    if (!orderPayments.length) {
-      const { keyId } = getRazorpayEnv();
-      return ok({
-        alreadyPurchased: false,
-        orderId: existingPending.razorpayOrderId,
-        keyId,
-        amount: existingPending.amount * 100,
-        currency: existingPending.currency || "INR",
-        courseId: id,
-        status: existingPending.status,
-      });
-    }
-    // Order has payment attempts but none captured (e.g. failed/cancelled
-    // attempts) — fall through and create a fresh order below.
+    // Never reopen an order with no captured payment. Razorpay can retain a
+    // client-side checkout session for that order after a cancelled or
+    // interrupted attempt, which makes the next checkout appear stuck.
+    await Payment.findByIdAndUpdate(existingPending._id, {
+      $set: { status: "failed", updatedAt: new Date() },
+    });
   }
 
   const order = await createRazorpayOrder({
