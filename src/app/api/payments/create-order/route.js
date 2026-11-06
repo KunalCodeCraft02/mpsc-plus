@@ -1,4 +1,4 @@
-import { connectDb, Course, Enrollment, Payment } from "@/db";
+import { connectDb, Course, Enrollment, Payment, ensurePaymentIndexes } from "@/db";
 import { handler, body, ok, fail } from "@/server/http";
 import { requireAuth } from "@/server/auth";
 import {
@@ -17,6 +17,7 @@ export const POST = handler(async (request) => {
   if (!Number.isFinite(id)) return fail(400, "Invalid course id");
 
   await connectDb();
+  await ensurePaymentIndexes();
   const course = await Course.findById(id).lean();
   if (!course || !course.published) return fail(404, "Course not found");
   if (course.isFree) return fail(400, "This course is free and does not require payment");

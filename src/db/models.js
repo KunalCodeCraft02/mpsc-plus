@@ -333,7 +333,7 @@ const paymentSchema = autoIncSchema(
     amount: { type: Number, required: true, default: 0 },
     currency: { type: String, required: true, default: "INR" },
     razorpayOrderId: { type: String, default: null },
-    razorpayPaymentId: { type: String, default: null },
+    razorpayPaymentId: { type: String },
     razorpaySignature: { type: String, default: null },
     status: { type: String, required: true, default: "created" },
     notes: { type: Schema.Types.Mixed, default: {} },
@@ -342,11 +342,58 @@ const paymentSchema = autoIncSchema(
   },
   [
     [{ userId: 1, courseId: 1, status: 1 }, { name: "payments_user_course_idx" }],
-    [{ razorpayOrderId: 1 }, { unique: true, sparse: true, name: "payments_order_uq" }],
-    [{ razorpayPaymentId: 1 }, { unique: true, sparse: true, name: "payments_payment_uq" }],
+    [
+      { razorpayOrderId: 1 },
+      {
+        unique: true,
+        name: "payments_order_uq",
+        partialFilterExpression: { razorpayOrderId: { $type: "string" } },
+      },
+    ],
+    [
+      { razorpayPaymentId: 1 },
+      {
+        unique: true,
+        name: "payments_payment_uq",
+        partialFilterExpression: { razorpayPaymentId: { $type: "string" } },
+      },
+    ],
   ],
 );
 export const Payment = compile("Payment", paymentSchema, "payments");
+
+let paymentIndexesPromise;
+export function ensurePaymentIndexes() {
+  if (!paymentIndexesPromise) {
+    paymentIndexesPromise = (async () => {
+      for (const indexName of ["payments_order_uq", "payments_payment_uq"]) {
+        try {
+          await Payment.collection.dropIndex(indexName);
+        } catch (error) {
+          if (error?.code !== 27 && error?.codeName !== "IndexNotFound") throw error;
+        }
+      }
+      await Payment.collection.createIndexes([
+        {
+          key: { razorpayOrderId: 1 },
+          unique: true,
+          name: "payments_order_uq",
+          partialFilterExpression: { razorpayOrderId: { $type: "string" } },
+        },
+        {
+          key: { razorpayPaymentId: 1 },
+          unique: true,
+          name: "payments_payment_uq",
+          partialFilterExpression: { razorpayPaymentId: { $type: "string" } },
+        },
+      ]);
+    })().catch((error) => {
+      paymentIndexesPromise = undefined;
+      throw error;
+    });
+  }
+  return paymentIndexesPromise;
+}
 
 const lectureProgressSchema = autoIncSchema(
   "lecture_progress",
