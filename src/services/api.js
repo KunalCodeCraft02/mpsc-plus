@@ -43,12 +43,15 @@ api.interceptors.response.use(
       error?.response?.data?.message ||
       error?.message ||
       "Request failed";
-    console.error("[api]", {
-      method: error?.config?.method,
-      url: error?.config?.url,
-      status: error?.response?.status,
-      message,
-    });
+    console.error(
+      "[api]",
+      JSON.stringify({
+        method: error?.config?.method,
+        url: error?.config?.url,
+        status: error?.response?.status,
+        message,
+      }),
+    );
     return Promise.reject(Object.assign(new Error(message), {
       status: error?.response?.status,
       data: error?.response?.data,

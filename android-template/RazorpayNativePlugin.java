@@ -1,6 +1,7 @@
 package in.mpscpulse.app;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -84,7 +85,11 @@ public class RazorpayNativePlugin extends Plugin {
     }
 
     public void handlePaymentError(int code, String description, PaymentData paymentData) {
-        rejectPending(description == null ? "Payment failed" : description);
+        String safeDescription = description == null || description.isBlank()
+            ? "Payment failed. Please try again."
+            : description;
+        Log.e("RazorpayNative", "Payment failed code=" + code + " description=" + safeDescription);
+        rejectPending("Payment failed (" + code + "): " + safeDescription);
     }
 
     private void resolvePending(JSObject result) {
