@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -39,6 +39,22 @@ import { formatDuration, formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { navigateInternalUrl } from "@/lib/nativeLinks";
 
+function getPaymentErrorMessage(error, fallback = "Payment failed. Please try again.") {
+  const message = String(error?.message || "").trim();
+  if (/cancel/i.test(message)) return "Payment cancelled.";
+  if (/already purchased/i.test(message)) return "This course is already in your account.";
+  if (/duplicate|already being processed|in progress/i.test(message)) {
+    return "A payment is already being processed. Please wait a moment and check your course access.";
+  }
+  if (
+    !message ||
+    /internal server|validation failed|configuration|stack|mongoose|mongo|razorpay server|duplicate value/i.test(message)
+  ) {
+    return fallback;
+  }
+  return message;
+}
+
 export default function CourseDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -52,6 +68,7 @@ export default function CourseDetailPage() {
   const [paymentBusy, setPaymentBusy] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("idle"); // idle | failed | cancelled
+  const paymentInProgress = useRef(false);
 
   const load = () => {
     setError(null);
@@ -82,10 +99,16 @@ export default function CourseDetailPage() {
 
   const purchaseCourse = async () => {
     const currentCourse = data?.course;
-    if (!currentCourse || paymentBusy) return;
+    if (!currentCourse || paymentInProgress.current) return;
+    paymentInProgress.current = true;
     setPaymentBusy(true);
     setPaymentStatus("idle");
     setPaymentMessage("Opening secure payment...");
+    let checkoutOpened = false;
+    const releasePayment = () => {
+      paymentInProgress.current = false;
+      setPaymentBusy(false);
+    };
     try {
       const { keyId, orderId, amount, currency, alreadyPurchased } = await import("@/services/api").then(({ paymentService }) =>
         paymentService.createOrder({ courseId: Number(id) }),
@@ -110,7 +133,6 @@ export default function CourseDetailPage() {
           prefillName: "Student",
           themeColor: "#5b34e0",
         });
-        setPaymentBusy(false);
 
         await import("@/services/api").then(({ paymentService }) =>
           paymentService.verify({
@@ -124,6 +146,7 @@ export default function CourseDetailPage() {
         toast.success("Course purchased successfully");
         setPaymentMessage("Payment verified. Course access granted.");
         await load();
+        releasePayment();
         return;
       }
 
@@ -181,7 +204,6 @@ export default function CourseDetailPage() {
           },
         },
         handler: async function (response) {
-          setPaymentBusy(false);
           setPaymentMessage("Payment received. Verifying securely...");
           try {
             await import("@/services/api").then(({ paymentService }) =>
@@ -198,15 +220,18 @@ export default function CourseDetailPage() {
             await load();
           } catch (e) {
             setPaymentStatus("failed");
-            setPaymentMessage(`Payment verification failed: ${e.message || "Please check payment status."}`);
-            toast.error(e.message || "Payment verification failed");
+            const message = getPaymentErrorMessage(e, "Payment verification failed. Please check your payment status.");
+            setPaymentMessage(message);
+            toast.error(message);
+          } finally {
+            releasePayment();
           }
         },
         prefill: { name: "Student" },
         theme: { color: "#5b34e0" },
         modal: {
           ondismiss: () => {
-            setPaymentBusy(false);
+            releasePayment();
             setPaymentStatus("cancelled");
             setPaymentMessage("Payment cancelled.");
             toast.info("Payment cancelled. You can try again anytime.");
@@ -216,21 +241,23 @@ export default function CourseDetailPage() {
 
       rzp.on("payment.failed", (response) => {
         const description = response?.error?.description || "Payment failed. Please try again.";
-        setPaymentBusy(false);
+        releasePayment();
         setPaymentStatus("failed");
-        setPaymentMessage(description);
-        toast.error(description);
+        const message = getPaymentErrorMessage({ message: description });
+        setPaymentMessage(message);
+        toast.error(message);
       });
+      checkoutOpened = true;
       rzp.open();
     } catch (e) {
-      const message = e?.message || "";
-      const cancelled = /cancel/i.test(message);
-      setPaymentBusy(false);
+      const message = getPaymentErrorMessage(e);
+      const cancelled = message === "Payment cancelled.";
+      releasePayment();
       setPaymentStatus(cancelled ? "cancelled" : "failed");
-      setPaymentMessage(cancelled ? "Payment cancelled." : `Payment failed: ${message || "Please try again."}`);
-      toast.error(cancelled ? "Payment cancelled" : message || "Payment failed");
+      setPaymentMessage(message);
+      toast.error(cancelled ? "Payment cancelled" : message);
     } finally {
-      setPaymentBusy(false);
+      if (!checkoutOpened) releasePayment();
     }
   };
 
