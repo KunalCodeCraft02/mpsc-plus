@@ -1,11 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
-import { amountToPaise, verifyRazorpaySignature } from "./razorpay";
+import { amountToPaise, verifyRazorpaySignature } from "./razorpay.js";
 
 test("amountToPaise converts rupees to paise without floating drift", () => {
   assert.equal(amountToPaise(999), 99900);
   assert.equal(amountToPaise(49.99), 4999);
+});
+
+test("amountToPaise rejects amounts below Razorpay's minimum", () => {
+  assert.throws(() => amountToPaise(0.99), /at least 100 paise/);
 });
 
 test("verifyRazorpaySignature accepts a matching signature and rejects mismatches", () => {

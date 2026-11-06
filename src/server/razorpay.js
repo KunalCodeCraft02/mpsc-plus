@@ -1,5 +1,7 @@
 import crypto from "node:crypto";
 
+export const MIN_RAZORPAY_AMOUNT_PAISE = 100;
+
 export function getRazorpayEnv() {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -10,8 +12,11 @@ export function getRazorpayEnv() {
 
 export function amountToPaise(amount) {
   const n = Number(amount);
-  if (!Number.isFinite(n) || n < 0) throw new Error("Invalid amount");
-  return Math.round(n * 100);
+  const paise = Math.round(n * 100);
+  if (!Number.isFinite(n) || paise < MIN_RAZORPAY_AMOUNT_PAISE) {
+    throw new Error("Amount must be at least 100 paise");
+  }
+  return paise;
 }
 
 export function verifyRazorpaySignature({ order_id, payment_id, signature }, secret) {

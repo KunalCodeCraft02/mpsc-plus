@@ -214,6 +214,13 @@ export default function CourseDetailPage() {
         },
       });
 
+      rzp.on("payment.failed", (response) => {
+        const description = response?.error?.description || "Payment failed. Please try again.";
+        setPaymentBusy(false);
+        setPaymentStatus("failed");
+        setPaymentMessage(description);
+        toast.error(description);
+      });
       rzp.open();
     } catch (e) {
       const message = e?.message || "";

@@ -1,7 +1,12 @@
 import { connectDb, Course, Enrollment, Payment } from "@/db";
 import { handler, body, ok, fail } from "@/server/http";
 import { requireAuth } from "@/server/auth";
-import { createRazorpayOrder, fetchRazorpayOrderPayments, getRazorpayEnv } from "@/server/razorpay";
+import {
+  createRazorpayOrder,
+  fetchRazorpayOrderPayments,
+  getRazorpayEnv,
+  MIN_RAZORPAY_AMOUNT_PAISE,
+} from "@/server/razorpay";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +22,8 @@ export const POST = handler(async (request) => {
   if (course.isFree) return fail(400, "This course is free and does not require payment");
 
   const price = Number(course.price || 0);
-  if (!Number.isFinite(price) || price <= 0) {
-    return fail(400, "Course price is not configured");
+  if (!Number.isFinite(price) || price <= 0 || Math.round(price * 100) < MIN_RAZORPAY_AMOUNT_PAISE) {
+    return fail(400, "Course price must be at least 100 paise");
   }
 
   const existingEnrollment = await Enrollment.findOne({ userId: user.id, courseId: id }).lean();
